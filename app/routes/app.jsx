@@ -20,6 +20,7 @@ export default function App() {
         <s-app-nav>
           <s-link href="/app">Home</s-link>
           <s-link href="/app/wishlist">All Wishlist</s-link>
+          <s-link href="/app/oos">Out of Stock</s-link>
           <s-link href="/app/about">About US</s-link>
         </s-app-nav>
         <Outlet />

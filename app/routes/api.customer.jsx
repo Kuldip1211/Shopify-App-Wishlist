@@ -28,26 +28,28 @@ export const action = async ({ request }) => {
         // parse the incoming request data
         const body = await request.json();
 
-        const { id , firstName , lastName , email } = body;
+        const { id, firstName, lastName, email, wishlistItems, wishlistprice } = body;
 
         // validate the required feild 
-        if(!id || !firstName || !lastName || !email) {
+        if (!id || !firstName || !lastName || !email) {
             return Response.json({ message: "Missing required fields" }, { status: 400 });
         }
 
-        // create a new customer in the database
+        // // create a new customer in the database
         const newCustomer = await db.customer.create({
             data: {
                 id,
                 firstName,
                 lastName,
-                email
+                email,
+                wishlistItems,
+                wishlistprice
             }
         });
 
-        return Response.json({ message: "Customer created successfully", customer: newCustomer });
+        return Response.json({ message: "Customer created successfully" });
 
     } catch (error) {
-        return Response.json({ message: "Error creating customer" }, { status: 500 });
+        return Response.json({ message: error }, { status: 500 });
     }
 }

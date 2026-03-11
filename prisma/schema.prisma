@@ -38,18 +38,33 @@ model Customer {
   firstName     String
   lastName      String
   email         String     @unique
-  wishlist      Wishlist?     
+  wishlistItems Int        
+  wishlistprice Float
 }
 
 model Wishlist {
-  id           Int      @id @default(autoincrement())
-  customerId   String   @unique     
-  products     Json     @default("[]")
-  totalItems   Int      @default(0)
-  totalPrice   Float    @default(0)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  customer     Customer @relation(fields: [customerId], references: [id])
+  id                Int      @id @default(autoincrement())
+  customerIds       Json     @default("[]") // store as JSON array ["13", "14", "15"]
+  productId         String
+  varientId         String
+  productName       String
+  productPrice      String
+  productcategory   String
+  productImage      String
+  productLink       String
+  instock           Boolean
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 
-  @@index([customerId])
+}
+
+model Products {
+  id              Int   @id @default(autoincrement()) 
+  productId       String
+  productName     String
+  productcategory String 
+  productlistCount   Int
+  instock         Boolean
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 }
