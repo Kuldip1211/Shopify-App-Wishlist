@@ -1,0 +1,75 @@
+{% comment %}
+  ============================================================
+  WISHLIST BUTTON — Shopify Liquid Snippet
+  ============================================================
+  Usage: {% render 'wishlist-button', product: product %}
+  Or inline on product.liquid / card snippets.
+
+  Storage: localStorage (no app required)
+  Works with: Dawn, Debut, Impulse, and most themes.
+  ============================================================
+{% endcomment %}
+
+{% assign product_id = product.id | default: 0 %}
+{% assign product_title = product.title | default: '' | escape %}
+{% assign product_url = product.url | default: '#' %}
+{% assign product_image = product.featured_image | img_url: '400x' | default: '' %}
+{% assign product_price = product.price | money %}
+
+<button
+  class="wl-btn"
+  data-wishlist-btn
+  data-product-id="{{ product_id }}"
+  data-product-title="{{ product_title }}"
+  data-product-url="{{ product_url }}"
+  data-product-image="{{ product_image }}"
+  data-product-price="{{ product_price }}"
+  aria-label="Add {{ product_title }} to wishlist"
+  aria-pressed="false"
+  type="button"
+>
+  <span class="wl-btn__track" aria-hidden="true">
+    <!-- Outline heart -->
+    <svg class="wl-btn__heart wl-btn__heart--out" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12 21s-9-6.5-9-12.5A5.5 5.5 0 0 1 12 4.077 5.5 5.5 0 0 1 21 8.5C21 14.5 12 21 12 21Z"
+            stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
+    </svg>
+    <!-- Filled heart -->
+    <svg class="wl-btn__heart wl-btn__heart--fill" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12 21s-9-6.5-9-12.5A5.5 5.5 0 0 1 12 4.077 5.5 5.5 0 0 1 21 8.5C21 14.5 12 21 12 21Z"
+            fill="currentColor" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
+    </svg>
+    <!-- Burst ring -->
+    <span class="wl-btn__burst" aria-hidden="true">
+      <span class="wl-btn__dot" style="--a:0deg"></span>
+      <span class="wl-btn__dot" style="--a:45deg"></span>
+      <span class="wl-btn__dot" style="--a:90deg"></span>
+      <span class="wl-btn__dot" style="--a:135deg"></span>
+      <span class="wl-btn__dot" style="--a:180deg"></span>
+      <span class="wl-btn__dot" style="--a:225deg"></span>
+      <span class="wl-btn__dot" style="--a:270deg"></span>
+      <span class="wl-btn__dot" style="--a:315deg"></span>
+    </span>
+  </span>
+  <span class="wl-btn__labels">
+    <span class="wl-btn__label wl-btn__label--add">Add to Wishlist</span>
+    <span class="wl-btn__label wl-btn__label--done">Wishlisted</span>
+  </span>
+</button>
+
+<!-- ── Wishlist Toast notification ── -->
+<div class="wl-toast" aria-live="polite" role="status"></div>
+
+{{ 'wishlist.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'wishlist.js' | asset_url }}" defer="defer"></script>
+
+{% schema %}
+{
+  "name": "Star Rating",
+  "target": "section",
+  "settings": [
+    
+  ]
+}
+{% endschema %}
+

@@ -1,0 +1,246 @@
+/* ── Design Tokens ── */
+:root {
+  --wl-color-bg:        #ffffff;
+  --wl-color-border:    rgba(0,0,0,0.14);
+  --wl-color-border-h:  rgba(191,120,50,0.55);
+  --wl-color-accent:    #bf7832;
+  --wl-color-text:      #1a1a1a;
+  --wl-color-text-sub:  rgba(26,26,26,0.55);
+  --wl-color-fill:      #c0392b;
+  --wl-radius:          3px;
+  --wl-font:            'Raleway', 'Helvetica Neue', sans-serif;
+  --wl-font-display:    'Cormorant Garamond', Georgia, serif;
+  --wl-transition:      0.38s cubic-bezier(0.76, 0, 0.24, 1);
+}
+
+/* ── Google Fonts (import once per page via theme.liquid if preferred) ── */
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Raleway:wght@300;400;500&display=swap');
+
+/* ════════════════════════════════════════════
+   BUTTON
+════════════════════════════════════════════ */
+.wl-btn {
+  --_border:    var(--wl-color-border);
+  --_text:      var(--wl-color-text-sub);
+  --_heart:     var(--wl-color-text-sub);
+  --_scale-dot: 0;
+  --_r-dot:     0px;
+
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 32px 14px 24px;
+  background: var(--wl-color-bg);
+  border: 1px solid var(--_border);
+  border-radius: var(--wl-radius);
+  cursor: pointer;
+  font-family: var(--wl-font);
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--_text);
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    border-color var(--wl-transition),
+    box-shadow var(--wl-transition),
+    color var(--wl-transition),
+    background var(--wl-transition);
+  overflow: visible;
+}
+
+.wl-btn:focus-visible {
+  outline: 2px solid var(--wl-color-accent);
+  outline-offset: 3px;
+}
+
+/* ── Hover ── */
+.wl-btn:hover {
+  --_border: var(--wl-color-border-h);
+  --_text:   var(--wl-color-accent);
+  --_heart:  var(--wl-color-accent);
+  box-shadow: 0 4px 24px rgba(191,120,50,0.10);
+}
+
+/* Corner accent lines */
+.wl-btn::before,
+.wl-btn::after {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-color: var(--wl-color-accent);
+  transition: width 0.35s ease, height 0.35s ease, opacity 0.35s ease;
+  opacity: 0;
+}
+.wl-btn::before {
+  top: -1px; left: -1px;
+  border-width: 1px 0 0 1px;
+}
+.wl-btn::after {
+  bottom: -1px; right: -1px;
+  border-width: 0 1px 1px 0;
+}
+.wl-btn:hover::before,
+.wl-btn:hover::after {
+  width: 12px; height: 12px; opacity: 1;
+}
+
+/* ── Active (wishlisted) ── */
+.wl-btn[aria-pressed="true"] {
+  --_border: rgba(192,57,43,0.3);
+  --_text:   #c0392b;
+  --_heart:  #c0392b;
+}
+.wl-btn[aria-pressed="true"]:hover {
+  --_border: rgba(192,57,43,0.5);
+  box-shadow: 0 4px 24px rgba(192,57,43,0.10);
+}
+
+/* ════════════════════════════════════════════
+   HEART ICON
+════════════════════════════════════════════ */
+.wl-btn__track {
+  position: relative;
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  color: var(--_heart);
+}
+
+.wl-btn__heart {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transition:
+    opacity 0.32s ease,
+    transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
+}
+
+.wl-btn__heart--out  { opacity: 1;  transform: scale(1);   }
+.wl-btn__heart--fill { opacity: 0;  transform: scale(0.4); }
+
+.wl-btn[aria-pressed="true"] .wl-btn__heart--out  { opacity: 0;  transform: scale(0.4); }
+.wl-btn[aria-pressed="true"] .wl-btn__heart--fill { opacity: 1;  transform: scale(1);   }
+
+/* ════════════════════════════════════════════
+   BURST PARTICLES
+════════════════════════════════════════════ */
+.wl-btn__burst {
+  position: absolute;
+  inset: -10px;
+  pointer-events: none;
+}
+
+.wl-btn__dot {
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 4px; height: 4px;
+  border-radius: 50%;
+  background: #c0392b;
+  transform: translate(-50%,-50%)
+             rotate(var(--a))
+             translateY(calc(var(--_r-dot) * -1))
+             scale(var(--_scale-dot));
+  opacity: 0;
+  transition: none;
+}
+
+.wl-btn--bursting .wl-btn__dot {
+  animation: wl-dot-burst 0.55s cubic-bezier(0.25,0.46,0.45,0.94) forwards;
+}
+
+@keyframes wl-dot-burst {
+  0%   { opacity: 1; transform: translate(-50%,-50%) rotate(var(--a)) translateY(0px)    scale(1);   }
+  55%  { opacity: 1; transform: translate(-50%,-50%) rotate(var(--a)) translateY(-14px)  scale(0.7); }
+  100% { opacity: 0; transform: translate(-50%,-50%) rotate(var(--a)) translateY(-18px)  scale(0);   }
+}
+
+/* stagger dots */
+.wl-btn__dot:nth-child(1) { animation-delay: 0ms;   }
+.wl-btn__dot:nth-child(2) { animation-delay: 30ms;  }
+.wl-btn__dot:nth-child(3) { animation-delay: 15ms;  }
+.wl-btn__dot:nth-child(4) { animation-delay: 45ms;  }
+.wl-btn__dot:nth-child(5) { animation-delay: 10ms;  }
+.wl-btn__dot:nth-child(6) { animation-delay: 40ms;  }
+.wl-btn__dot:nth-child(7) { animation-delay: 20ms;  }
+.wl-btn__dot:nth-child(8) { animation-delay: 55ms;  }
+
+/* ════════════════════════════════════════════
+   LABEL TEXT
+════════════════════════════════════════════ */
+.wl-btn__labels {
+  position: relative;
+  height: 1.2em;
+  overflow: hidden;
+  min-width: 90px;
+}
+
+.wl-btn__label {
+  display: block;
+  line-height: 1.2em;
+  white-space: nowrap;
+  transition: transform var(--wl-transition), opacity var(--wl-transition);
+}
+
+.wl-btn__label--add  { transform: translateY(0);     opacity: 1; }
+.wl-btn__label--done {
+  position: absolute; top: 0; left: 0;
+  transform: translateY(100%);
+  opacity: 0;
+  color: #c0392b;
+  font-weight: 500;
+}
+
+.wl-btn[aria-pressed="true"] .wl-btn__label--add  { transform: translateY(-100%); opacity: 0; }
+.wl-btn[aria-pressed="true"] .wl-btn__label--done { transform: translateY(0);     opacity: 1; }
+
+/* ════════════════════════════════════════════
+   REMOVING FLASH
+════════════════════════════════════════════ */
+.wl-btn--removing {
+  animation: wl-flash 0.45s ease forwards;
+}
+@keyframes wl-flash {
+  0%   { opacity: 1; }
+  25%  { opacity: 0.25; }
+  100% { opacity: 1; }
+}
+
+/* ════════════════════════════════════════════
+   TOAST
+════════════════════════════════════════════ */
+/* Add Jakarta Sans font — paste in <head> or theme.liquid */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600&display=swap');
+
+.wl-toast {
+  position: fixed;
+  top: 80px;
+  right: 28px;
+  left: auto;
+  transform: translateX(20px);
+  background: #16a34a;
+  color: #ffffff;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  padding: 14px 22px;
+  border-radius: 6px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease, transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  z-index: 9999;
+  white-space: nowrap;
+  box-shadow: 0 8px 32px rgba(22, 163, 74, 0.35);
+}
+
+.wl-toast--visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
