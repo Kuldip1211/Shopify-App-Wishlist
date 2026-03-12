@@ -1,6 +1,7 @@
 import db from "../db.server";
 
 export const loader = async ({ request }) => {
+    console.log("Received request to fetch customer data");
     try {
         const url = new URL(request.url);
         const id = url.searchParams.get("id");
@@ -14,7 +15,7 @@ export const loader = async ({ request }) => {
         });
 
         if (!customer) {
-            return Response.json({ message: "Customer not found" }, { status: 404 });
+            return Response.json({ message: false }, { status: 404 }); // 👈 add status
         }
 
         return Response.json({ customer });
@@ -24,6 +25,7 @@ export const loader = async ({ request }) => {
 };
 
 export const action = async ({ request }) => {
+    console.log("Received request to create customer");
     try {
         // parse the incoming request data
         const body = await request.json();
@@ -50,6 +52,7 @@ export const action = async ({ request }) => {
         return Response.json({ message: "Customer created successfully" });
 
     } catch (error) {
+        console.error("Error creating customer:", error);
         return Response.json({ message: error }, { status: 500 });
     }
 }
