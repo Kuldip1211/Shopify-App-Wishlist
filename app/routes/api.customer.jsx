@@ -36,7 +36,7 @@ export const action = async ({ request }) => {
         }
 
         // // create a new customer in the database
-        const newCustomer = await db.customer.create({
+        await db.customer.create({
             data: {
                 id,
                 firstName,
@@ -50,6 +50,6 @@ export const action = async ({ request }) => {
         return Response.json({ message: "Customer created successfully" });
 
     } catch (error) {
-        return Response.json({ message: error }, { status: 500 });
+        return Response.json({ message: error instanceof Error ? error.message : "Error creating customer" }, { status: 500 });
     }
 }

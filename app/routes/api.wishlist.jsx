@@ -1,6 +1,6 @@
 import db from "../db.server";
 
-export const loader = async ({ request }) => {
+export const loader = async () => {
     return Response.json({ message: "Wishlist API is working" });
 }
 
