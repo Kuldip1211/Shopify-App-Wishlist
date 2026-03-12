@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
+import { AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from "recharts";
 
 const users = [
   { id:1, name:"Sarah Mitchell", email:"sarah@email.com", avatar:"SM", avatarColor:"#E63946", totalItems:12, lastActive:"2m ago", status:"active", totalValue:1240,
@@ -19,6 +19,21 @@ const users = [
   { id:8, name:"Yuki Tanaka", email:"yuki@email.com", avatar:"YT", avatarColor:"#E91E8C", totalItems:31, lastActive:"10m ago", status:"active", totalValue:4200,
     wishlist:[{name:"Anime Figurine Set",category:"Collectibles",price:180,img:"🎎",addedOn:"Mar 11",inStock:true},{name:"Gaming Headset",category:"Electronics",price:220,img:"🎮",addedOn:"Mar 9",inStock:true},{name:"Sakura Perfume",category:"Beauty",price:95,img:"🌸",addedOn:"Mar 5",inStock:true}]},
 ];
+
+const computeOutOfStockData = () => {
+  const catMap = {};
+  users.forEach(u => {
+    u.wishlist.forEach(item => {
+      if (!catMap[item.category]) catMap[item.category] = { category: item.category, total: 0, outOfStock: 0, inStock: 0 };
+      catMap[item.category].total++;
+      if (!item.inStock) catMap[item.category].outOfStock++;
+      else catMap[item.category].inStock++;
+    });
+  });
+  return Object.values(catMap).filter(c => c.total > 0).sort((a,b) => b.total - a.total);
+};
+
+const outOfStockData = computeOutOfStockData();
 
 const areaData = [
   {day:"Mon",saves:42,value:3200},{day:"Tue",saves:58,value:4100},{day:"Wed",saves:35,value:2800},
@@ -40,11 +55,13 @@ const statusColor = {active:"#10B981",idle:"#F59E0B",offline:"#9CA3AF"};
 const statusBg = {active:"#ECFDF5",idle:"#FFFBEB",offline:"#F9FAFB"};
 const statusTextColor = {active:"#059669",idle:"#D97706",offline:"#6B7280"};
 
+const FONT = "'Plus Jakarta Sans', sans-serif";
+
 const CustomTooltip = ({active,payload,label}) => {
   if (active && payload && payload.length) return (
-    <div style={{background:"white",border:"1px solid #E5E7EB",borderRadius:10,padding:"10px 14px",fontSize:12,boxShadow:"0 4px 16px rgba(0,0,0,0.1)"}}>
-      <div style={{color:"#9CA3AF",marginBottom:4,fontWeight:600}}>{label}</div>
-      {payload.map((p,i) => <div key={i} style={{color:p.color,fontWeight:700}}>{p.name}: {p.value > 999 ? `$${p.value.toLocaleString()}` : p.value}</div>)}
+    <div style={{background:"white",border:"1px solid #E5E7EB",borderRadius:10,padding:"10px 14px",fontSize:12,boxShadow:"0 4px 16px rgba(0,0,0,0.1)",fontFamily:FONT}}>
+      <div style={{color:"#4B5563",marginBottom:4,fontWeight:600}}>{label}</div>
+      {payload.map((p,i) => <div key={i} style={{color:p.color,fontWeight:700}}>{p.name}: {typeof p.value === 'number' && p.value > 999 ? `$${p.value.toLocaleString()}` : p.value}</div>)}
     </div>
   );
   return null;
@@ -65,14 +82,19 @@ export default function WishlistDashboard() {
   const totalValue = users.reduce((a,u) => a+u.totalValue, 0);
   const totalProducts = users.reduce((a,u) => a+u.wishlist.length, 0);
   const activeUsers = users.filter(u => u.status==="active").length;
+  const totalOutOfStock = outOfStockData.reduce((a,c) => a+c.outOfStock, 0);
   const filtered = users.filter(u =>
     u.name.toLowerCase().includes(search.toLowerCase()) ||
     u.email.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
-    <div style={{fontFamily:"'Segoe UI',system-ui,sans-serif",background:"#F4F5F7",minHeight:"100vh",color:"#1A1A2E"}}>
+    <div style={{fontFamily:FONT,background:"#F4F5F7",minHeight:"100vh",color:"#1A1A2E"}}>
       <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap');
+
+        * { font-family: 'Plus Jakarta Sans', sans-serif !important; }
+
         @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
         @keyframes shimmer{0%{background-position:-200% center}100%{background-position:200% center}}
         @keyframes pulse2{0%,100%{opacity:1}50%{opacity:0.4}}
@@ -111,18 +133,18 @@ export default function WishlistDashboard() {
         .search-input{
           background:#F9FAFB; border:1.5px solid #E5E7EB; border-radius:11px;
           padding:9px 13px 9px 38px; font-size:13px; color:#1A1A2E;
-          outline:none; font-family:inherit; width:200px;
-          transition:border-color 0.2s,box-shadow 0.2s;
+          outline:none; font-family:'Plus Jakarta Sans', sans-serif !important; width:200px;
+          transition:border-color 0.2s,box-shadow 0.2s; font-weight:500;
         }
-        .search-input::placeholder{color:#9CA3AF;}
+        .search-input::placeholder{color:#9CA3AF; font-weight:400;}
         .search-input:focus{border-color:#E63946;box-shadow:0 0 0 3px rgba(230,57,70,0.08);}
 
         .shimmer-btn{
           background:linear-gradient(270deg,#E63946,#FF6B6B,#FF8C69,#FF6B6B,#E63946);
           background-size:300% 100%; animation:shimmer 3s ease infinite;
           color:white; border:none; padding:9px 18px; border-radius:9px;
-          font-weight:700; font-size:12px; cursor:pointer; font-family:inherit;
-          box-shadow:0 3px 12px rgba(230,57,70,0.3); transition:transform 0.15s;
+          font-weight:700; font-size:12px; cursor:pointer; font-family:'Plus Jakarta Sans', sans-serif !important;
+          box-shadow:0 3px 12px rgba(230,57,70,0.3); transition:transform 0.15s; letter-spacing:0.01em;
         }
         .shimmer-btn:hover{transform:translateY(-1px);}
 
@@ -146,11 +168,11 @@ export default function WishlistDashboard() {
         .product-row:last-child{border-bottom:none;}
         .close-btn{
           width:30px; height:30px; border-radius:50%; border:none;
-          background:#F3F4F6; color:#6B7280; font-size:15px; cursor:pointer;
+          background:rgba(255,255,255,0.25); color:white; font-size:15px; cursor:pointer;
           display:flex; align-items:center; justify-content:center;
-          transition:all 0.2s; font-family:inherit;
+          transition:all 0.2s; font-family:'Plus Jakarta Sans', sans-serif !important;
         }
-        .close-btn:hover{background:#E63946;color:white;transform:rotate(90deg);}
+        .close-btn:hover{background:rgba(255,255,255,0.45);transform:rotate(90deg);}
 
         .sidebar-stat{
           display:flex; align-items:center; gap:12px; padding:12px 14px;
@@ -189,18 +211,19 @@ export default function WishlistDashboard() {
         <div style={{width:268,flexShrink:0,borderRight:"1px solid #EBEBEC",padding:"24px 18px",display:"flex",flexDirection:"column",gap:24,overflowY:"auto",background:"white"}}>
 
           <div>
-            <div style={{fontSize:10,fontWeight:800,color:"#9CA3AF",letterSpacing:2,textTransform:"uppercase",marginBottom:12}}>Summary</div>
+            <div style={{fontSize:10,fontWeight:800,color:"#6B7280",letterSpacing:2,textTransform:"uppercase",marginBottom:12}}>Summary</div>
             {[
               {label:"Total Customers",value:users.length,icon:"👥",color:"#45B7D1",delay:"0s"},
               {label:"Wishlist Items",value:totalItems,icon:"❤️",color:"#E63946",delay:"0.06s"},
               {label:"Unique Products",value:totalProducts,icon:"🛍️",color:"#F4A261",delay:"0.12s"},
               {label:"Total Value",value:`$${totalValue.toLocaleString()}`,icon:"💰",color:"#BB8FCE",delay:"0.18s"},
+              {label:"Out of Stock",value:totalOutOfStock,icon:"🚫",color:"#E63946",delay:"0.24s"},
             ].map((s,i) => (
               <div key={i} className="sidebar-stat" style={{animationDelay:s.delay}}>
                 <div style={{width:38,height:38,borderRadius:11,background:`${s.color}15`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0}}>{s.icon}</div>
                 <div>
                   <div style={{fontSize:19,fontWeight:900,color:"#1A1A2E",letterSpacing:"-0.5px"}}>{s.value}</div>
-                  <div style={{fontSize:11,color:"#9CA3AF",marginTop:1}}>{s.label}</div>
+                  <div style={{fontSize:11,fontWeight:500,color:"#4B5563",marginTop:1}}>{s.label}</div>
                 </div>
               </div>
             ))}
@@ -208,11 +231,11 @@ export default function WishlistDashboard() {
 
           {/* Category bars */}
           <div>
-            <div style={{fontSize:10,fontWeight:800,color:"#9CA3AF",letterSpacing:2,textTransform:"uppercase",marginBottom:14}}>By Category</div>
+            <div style={{fontSize:10,fontWeight:800,color:"#6B7280",letterSpacing:2,textTransform:"uppercase",marginBottom:14}}>By Category</div>
             {categoryData.map((cat,i) => (
               <div key={i} style={{marginBottom:12}}>
                 <div style={{display:"flex",justifyContent:"space-between",marginBottom:5}}>
-                  <span style={{fontSize:12,fontWeight:600,color:"#374151"}}>{cat.name}</span>
+                  <span style={{fontSize:12,fontWeight:600,color:"#1F2937"}}>{cat.name}</span>
                   <span style={{fontSize:12,fontWeight:700,color:cat.color}}>{cat.value}%</span>
                 </div>
                 <div style={{height:6,background:"#F3F4F6",borderRadius:3,overflow:"hidden"}}>
@@ -224,7 +247,7 @@ export default function WishlistDashboard() {
 
           {/* Status */}
           <div>
-            <div style={{fontSize:10,fontWeight:800,color:"#9CA3AF",letterSpacing:2,textTransform:"uppercase",marginBottom:12}}>User Status</div>
+            <div style={{fontSize:10,fontWeight:800,color:"#6B7280",letterSpacing:2,textTransform:"uppercase",marginBottom:12}}>User Status</div>
             {[
               {label:"Active",count:users.filter(u=>u.status==="active").length,color:"#10B981",bg:"#ECFDF5",border:"#BBF7D0"},
               {label:"Idle",count:users.filter(u=>u.status==="idle").length,color:"#F59E0B",bg:"#FFFBEB",border:"#FDE68A"},
@@ -233,7 +256,7 @@ export default function WishlistDashboard() {
               <div key={i} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"9px 13px",borderRadius:10,background:s.bg,border:`1px solid ${s.border}`,marginBottom:7}}>
                 <div style={{display:"flex",alignItems:"center",gap:8}}>
                   <div style={{width:7,height:7,borderRadius:"50%",background:s.color}}/>
-                  <span style={{fontSize:12,fontWeight:600,color:"#374151"}}>{s.label}</span>
+                  <span style={{fontSize:12,fontWeight:600,color:"#1F2937"}}>{s.label}</span>
                 </div>
                 <span style={{fontSize:15,fontWeight:900,color:s.color}}>{s.count}</span>
               </div>
@@ -259,7 +282,7 @@ export default function WishlistDashboard() {
                   <div style={{width:8,height:8,borderRadius:"50%",background:s.color,boxShadow:`0 0 8px ${s.color}99`,marginTop:4}}/>
                 </div>
                 <div style={{fontSize:29,fontWeight:900,letterSpacing:"-1px",color:"#1A1A2E",marginBottom:3}}>{s.value}</div>
-                <div style={{fontSize:12,color:"#9CA3AF"}}>{s.label}</div>
+                <div style={{fontSize:12,fontWeight:600,color:"#374151"}}>{s.label}</div>
                 <div style={{fontSize:11,color:s.color,fontWeight:700,marginTop:7,display:"flex",alignItems:"center",gap:4}}>
                   <span style={{background:`${s.color}12`,padding:"2px 7px",borderRadius:20}}>{s.sub}</span>
                 </div>
@@ -269,17 +292,15 @@ export default function WishlistDashboard() {
 
           {/* Charts row */}
           <div style={{display:"grid",gridTemplateColumns:"1.6fr 1fr",gap:18}}>
-
-            {/* Area chart */}
             <div className="graph-card" style={{animationDelay:"0.3s"}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:18}}>
                 <div>
-                  <div style={{fontWeight:700,fontSize:15,color:"#1A1A2E",marginBottom:2}}>Wishlist Activity</div>
-                  <div style={{fontSize:12,color:"#9CA3AF"}}>Daily saves & value this week</div>
+                  <div style={{fontWeight:700,fontSize:15,color:"#1A1A2E",marginBottom:3}}>Wishlist Activity</div>
+                  <div style={{fontSize:12,fontWeight:500,color:"#4B5563"}}>Daily saves & value this week</div>
                 </div>
                 <div style={{display:"flex",gap:14,fontSize:11}}>
-                  <div style={{display:"flex",alignItems:"center",gap:5}}><div style={{width:8,height:8,borderRadius:"50%",background:"#E63946"}}/><span style={{color:"#6B7280",fontWeight:600}}>Saves</span></div>
-                  <div style={{display:"flex",alignItems:"center",gap:5}}><div style={{width:8,height:8,borderRadius:"50%",background:"#4ECDC4"}}/><span style={{color:"#6B7280",fontWeight:600}}>Value</span></div>
+                  <div style={{display:"flex",alignItems:"center",gap:5}}><div style={{width:8,height:8,borderRadius:"50%",background:"#E63946"}}/><span style={{color:"#374151",fontWeight:600}}>Saves</span></div>
+                  <div style={{display:"flex",alignItems:"center",gap:5}}><div style={{width:8,height:8,borderRadius:"50%",background:"#4ECDC4"}}/><span style={{color:"#374151",fontWeight:600}}>Value</span></div>
                 </div>
               </div>
               <ResponsiveContainer width="100%" height={175}>
@@ -295,8 +316,8 @@ export default function WishlistDashboard() {
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
-                  <XAxis dataKey="day" tick={{fill:"#9CA3AF",fontSize:11}} axisLine={false} tickLine={false}/>
-                  <YAxis tick={{fill:"#9CA3AF",fontSize:11}} axisLine={false} tickLine={false} width={30}/>
+                  <XAxis dataKey="day" tick={{fill:"#6B7280",fontSize:11,fontWeight:500,fontFamily:FONT}} axisLine={false} tickLine={false}/>
+                  <YAxis tick={{fill:"#6B7280",fontSize:11,fontFamily:FONT}} axisLine={false} tickLine={false} width={30}/>
                   <Tooltip content={<CustomTooltip/>}/>
                   <Area type="monotone" dataKey="saves" name="Saves" stroke="#E63946" strokeWidth={2.5} fill="url(#gSaves)" dot={false}/>
                   <Area type="monotone" dataKey="value" name="Value $" stroke="#4ECDC4" strokeWidth={2.5} fill="url(#gValue)" dot={false}/>
@@ -304,10 +325,9 @@ export default function WishlistDashboard() {
               </ResponsiveContainer>
             </div>
 
-            {/* Pie chart */}
             <div className="graph-card" style={{animationDelay:"0.38s"}}>
-              <div style={{fontWeight:700,fontSize:15,color:"#1A1A2E",marginBottom:2}}>By Category</div>
-              <div style={{fontSize:12,color:"#9CA3AF",marginBottom:14}}>Product distribution</div>
+              <div style={{fontWeight:700,fontSize:15,color:"#1A1A2E",marginBottom:3}}>By Category</div>
+              <div style={{fontSize:12,fontWeight:500,color:"#4B5563",marginBottom:14}}>Product distribution</div>
               <ResponsiveContainer width="100%" height={145}>
                 <PieChart>
                   <Pie data={categoryData} cx="50%" cy="50%" innerRadius={44} outerRadius={66} paddingAngle={3} dataKey="value">
@@ -320,19 +340,105 @@ export default function WishlistDashboard() {
                 {categoryData.map((c,i) => (
                   <div key={i} style={{display:"flex",alignItems:"center",gap:5,fontSize:11}}>
                     <div style={{width:7,height:7,borderRadius:"50%",background:c.color,flexShrink:0}}/>
-                    <span style={{color:"#6B7280",fontWeight:500}}>{c.name}</span>
+                    <span style={{color:"#374151",fontWeight:500}}>{c.name}</span>
                   </div>
                 ))}
               </div>
             </div>
           </div>
 
+          {/* Out of Stock Chart */}
+          {(() => {
+            const oosOnly = outOfStockData.filter(c => c.outOfStock > 0).map(c => ({
+              category: c.category,
+              outOfStock: c.outOfStock,
+              total: c.total,
+            }));
+            const barColors = ["#E63946","#FF6B6B","#FF8C69","#E05050","#FF4757","#FF6348","#E84393","#E63946"];
+            return (
+              <div className="graph-card" style={{animationDelay:"0.42s"}}>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
+                  <div>
+                    <div style={{fontWeight:700,fontSize:15,color:"#1A1A2E",marginBottom:3}}>Out of Stock — Category Wise</div>
+                    <div style={{fontSize:12,fontWeight:500,color:"#4B5563"}}>OOS count vs total wishlist items per category</div>
+                  </div>
+                  <div style={{display:"flex",gap:8}}>
+                    <div style={{background:"#FFF0F1",border:"1px solid rgba(230,57,70,0.2)",borderRadius:9,padding:"6px 14px",fontSize:13,fontWeight:800,color:"#E63946"}}>
+                      🚫 {totalOutOfStock} OOS
+                    </div>
+                    <div style={{background:"#F3F4F6",border:"1px solid #E5E7EB",borderRadius:9,padding:"6px 14px",fontSize:13,fontWeight:800,color:"#374151"}}>
+                      🛍️ {totalProducts} total
+                    </div>
+                  </div>
+                </div>
+                <ResponsiveContainer width="100%" height={230}>
+                  <BarChart data={oosOnly} barSize={42} margin={{top:24,right:8,left:0,bottom:0}}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" vertical={false}/>
+                    <XAxis dataKey="category" tick={{fill:"#6B7280",fontSize:12,fontWeight:600,fontFamily:FONT}} axisLine={false} tickLine={false}/>
+                    <YAxis tick={{fill:"#6B7280",fontSize:11,fontFamily:FONT}} axisLine={false} tickLine={false} width={24} allowDecimals={false}/>
+                    <Tooltip content={({active,payload,label}) => {
+                      if (!active || !payload?.length) return null;
+                      const d = oosOnly.find(o => o.category === label);
+                      return (
+                        <div style={{background:"white",border:"1px solid #FECDD3",borderRadius:12,padding:"12px 16px",fontSize:12,boxShadow:"0 4px 20px rgba(230,57,70,0.14)",minWidth:160,fontFamily:FONT}}>
+                          <div style={{fontWeight:800,color:"#1A1A2E",marginBottom:8,fontSize:13}}>{label}</div>
+                          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:5}}>
+                            <span style={{color:"#4B5563",fontWeight:500}}>🚫 Out of Stock</span>
+                            <span style={{color:"#E63946",fontWeight:800,fontSize:14,marginLeft:12}}>{d?.outOfStock}</span>
+                          </div>
+                          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
+                            <span style={{color:"#4B5563",fontWeight:500}}>🛍️ Total in wishlist</span>
+                            <span style={{color:"#374151",fontWeight:800,fontSize:14,marginLeft:12}}>{d?.total}</span>
+                          </div>
+                          <div style={{borderTop:"1px solid #F3F4F6",paddingTop:7}}>
+                            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                              <span style={{color:"#4B5563",fontWeight:500}}>OOS Rate</span>
+                              <span style={{color:"#E63946",fontWeight:800}}>{d ? Math.round((d.outOfStock/d.total)*100) : 0}%</span>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    }}/>
+                    <Bar dataKey="outOfStock" name="Out of Stock" radius={[8,8,0,0]}
+                      label={({x,y,width,value,index}) => {
+                        const d = oosOnly[index];
+                        return (
+                          <g>
+                            <text x={x + width/2} y={y - 6} textAnchor="middle" fill="#E63946" fontWeight={800} fontSize={13} fontFamily={FONT}>🚫 {value}</text>
+                            <text x={x + width/2} y={y + (230 - 24 - 30) + 38} textAnchor="middle" fill="#6B7280" fontWeight={700} fontSize={11} fontFamily={FONT}>
+                              {d?.total} total
+                            </text>
+                          </g>
+                        );
+                      }}
+                    >
+                      {oosOnly.map((_,i) => (
+                        <Cell key={i} fill={barColors[i % barColors.length]} fillOpacity={0.88}/>
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+                <div style={{display:"flex",flexWrap:"wrap",gap:8,marginTop:14,paddingTop:14,borderTop:"1px solid #F3F4F6"}}>
+                  {oosOnly.map((c,i) => (
+                    <div key={i} style={{display:"flex",alignItems:"center",gap:6,background:"#FFF8F8",border:"1px solid rgba(230,57,70,0.14)",borderRadius:20,padding:"5px 12px"}}>
+                      <div style={{width:7,height:7,borderRadius:"50%",background:barColors[i % barColors.length],flexShrink:0}}/>
+                      <span style={{fontSize:11,fontWeight:700,color:"#1F2937"}}>{c.category}</span>
+                      <span style={{fontSize:11,color:"#E63946",fontWeight:800}}>{c.outOfStock} OOS</span>
+                      <span style={{fontSize:10,color:"#9CA3AF"}}>/</span>
+                      <span style={{fontSize:11,color:"#4B5563",fontWeight:600}}>{c.total} total</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
+
           {/* Bar chart */}
           <div className="graph-card" style={{animationDelay:"0.44s"}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:18}}>
               <div>
-                <div style={{fontWeight:700,fontSize:15,color:"#1A1A2E",marginBottom:2}}>Monthly Wishlist Growth</div>
-                <div style={{fontSize:12,color:"#9CA3AF"}}>Total wishlists created per month</div>
+                <div style={{fontWeight:700,fontSize:15,color:"#1A1A2E",marginBottom:3}}>Monthly Wishlist Growth</div>
+                <div style={{fontSize:12,fontWeight:500,color:"#4B5563"}}>Total wishlists created per month</div>
               </div>
               <div style={{background:"#FFF0F1",border:"1px solid rgba(230,57,70,0.2)",borderRadius:9,padding:"5px 13px",fontSize:12,fontWeight:700,color:"#E63946"}}>
                 +147 this month ↑
@@ -341,8 +447,8 @@ export default function WishlistDashboard() {
             <ResponsiveContainer width="100%" height={140}>
               <BarChart data={barData} barSize={34}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" vertical={false}/>
-                <XAxis dataKey="month" tick={{fill:"#9CA3AF",fontSize:11}} axisLine={false} tickLine={false}/>
-                <YAxis tick={{fill:"#9CA3AF",fontSize:11}} axisLine={false} tickLine={false} width={30}/>
+                <XAxis dataKey="month" tick={{fill:"#6B7280",fontSize:11,fontWeight:500,fontFamily:FONT}} axisLine={false} tickLine={false}/>
+                <YAxis tick={{fill:"#6B7280",fontSize:11,fontFamily:FONT}} axisLine={false} tickLine={false} width={30}/>
                 <Tooltip content={<CustomTooltip/>}/>
                 <Bar dataKey="wishlists" name="Wishlists" radius={[7,7,0,0]}>
                   {barData.map((_,i) => (
@@ -358,7 +464,7 @@ export default function WishlistDashboard() {
             <div style={{padding:"18px 20px 14px",borderBottom:"1px solid #F3F4F6",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
               <div>
                 <div style={{fontWeight:700,fontSize:15,color:"#1A1A2E"}}>Customer Wishlists</div>
-                <div style={{fontSize:12,color:"#9CA3AF",marginTop:2}}>Click any row to view full wishlist</div>
+                <div style={{fontSize:12,fontWeight:500,color:"#4B5563",marginTop:2}}>Click any row to view full wishlist</div>
               </div>
               <div style={{position:"relative"}}>
                 <span style={{position:"absolute",left:11,top:"50%",transform:"translateY(-50%)",fontSize:13,color:"#9CA3AF"}}>🔍</span>
@@ -372,7 +478,7 @@ export default function WishlistDashboard() {
                   <div style={{width:40,height:40,borderRadius:"50%",background:`linear-gradient(135deg,${user.avatarColor},${user.avatarColor}99)`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,fontWeight:800,color:"white",flexShrink:0,boxShadow:`0 3px 10px ${user.avatarColor}40`}}>{user.avatar}</div>
                   <div style={{flex:1,minWidth:0}}>
                     <div style={{fontWeight:700,fontSize:13,color:"#1A1A2E",marginBottom:2}}>{user.name}</div>
-                    <div style={{fontSize:11,color:"#9CA3AF"}}>{user.email}</div>
+                    <div style={{fontSize:11,fontWeight:500,color:"#4B5563"}}>{user.email}</div>
                   </div>
                   <div style={{display:"flex",alignItems:"center",gap:5,flexShrink:0}}>
                     <div style={{display:"flex",alignItems:"center",gap:5,background:statusBg[user.status],border:`1px solid ${statusColor[user.status]}30`,borderRadius:20,padding:"3px 9px"}}>
@@ -382,9 +488,9 @@ export default function WishlistDashboard() {
                   </div>
                   <div style={{textAlign:"right",flexShrink:0,minWidth:100}}>
                     <div style={{fontWeight:700,fontSize:13,color:"#1A1A2E"}}>{user.totalItems} items</div>
-                    <div style={{fontSize:11,color:"#9CA3AF",marginTop:2}}>${user.totalValue.toLocaleString()}</div>
+                    <div style={{fontSize:11,fontWeight:500,color:"#4B5563",marginTop:2}}>${user.totalValue.toLocaleString()}</div>
                   </div>
-                  <div style={{fontSize:11,color:"#C4C4C4",flexShrink:0,minWidth:55,textAlign:"right"}}>{user.lastActive}</div>
+                  <div style={{fontSize:11,fontWeight:500,color:"#6B7280",flexShrink:0,minWidth:55,textAlign:"right"}}>{user.lastActive}</div>
                   <div className="row-arrow">→</div>
                 </div>
               ))}
@@ -406,7 +512,7 @@ export default function WishlistDashboard() {
                     <div style={{width:54,height:54,borderRadius:16,background:"rgba(255,255,255,0.25)",backdropFilter:"blur(8px)",border:"2px solid rgba(255,255,255,0.4)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,fontWeight:800,color:"white"}}>{selectedUser.avatar}</div>
                     <div>
                       <div style={{fontWeight:800,fontSize:18,color:"white",letterSpacing:"-0.3px"}}>{selectedUser.name}</div>
-                      <div style={{fontSize:13,color:"rgba(255,255,255,0.75)",marginTop:2}}>{selectedUser.email}</div>
+                      <div style={{fontSize:13,fontWeight:500,color:"rgba(255,255,255,0.85)",marginTop:2}}>{selectedUser.email}</div>
                     </div>
                   </div>
                   <button className="close-btn" onClick={closeModal}>✕</button>
@@ -435,8 +541,8 @@ export default function WishlistDashboard() {
                   <div style={{flex:1,minWidth:0}}>
                     <div style={{fontWeight:600,fontSize:13,color:"#1A1A2E",marginBottom:4,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{item.name}</div>
                     <div style={{display:"flex",gap:6}}>
-                      <span style={{background:"#F3F4F6",color:"#6B7280",padding:"2px 8px",borderRadius:6,fontSize:11,fontWeight:600}}>{item.category}</span>
-                      <span style={{fontSize:11,color:"#C4C4C4"}}>Added {item.addedOn}</span>
+                      <span style={{background:"#F3F4F6",color:"#374151",padding:"2px 8px",borderRadius:6,fontSize:11,fontWeight:600}}>{item.category}</span>
+                      <span style={{fontSize:11,fontWeight:500,color:"#6B7280"}}>Added {item.addedOn}</span>
                     </div>
                   </div>
                   <div style={{textAlign:"right",flexShrink:0}}>
@@ -450,7 +556,7 @@ export default function WishlistDashboard() {
             </div>
 
             <div style={{padding:"14px 24px",borderTop:"1px solid #F3F4F6",display:"flex",gap:8,justifyContent:"flex-end",background:"#FAFAFA",flexShrink:0}}>
-              <button onClick={closeModal} style={{background:"white",border:"1.5px solid #E5E7EB",borderRadius:9,padding:"9px 20px",fontSize:13,fontWeight:600,cursor:"pointer",color:"#374151",fontFamily:"inherit"}}>Close</button>
+              <button onClick={closeModal} style={{background:"white",border:"1.5px solid #E5E7EB",borderRadius:9,padding:"9px 20px",fontSize:13,fontWeight:600,cursor:"pointer",color:"#374151",fontFamily:FONT}}>Close</button>
               <button className="shimmer-btn">🛒 Send Offer</button>
             </div>
           </div>
