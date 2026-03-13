@@ -19,6 +19,8 @@ export const loader = async ({ request }) => {
         return Response.json({ message: false });
       }
   }
+
+
   
   return Response.json({ message: "Please Enter Valid Parameters" });
 };
@@ -118,7 +120,7 @@ export const action = async ({ request }) => {
           message: "Customer already wishlisted this product",
         });
       }
-      
+
       try {
         const wishlisted = await db.wishlist.update({
           where: { id: existing.id }, // use id — always safe
