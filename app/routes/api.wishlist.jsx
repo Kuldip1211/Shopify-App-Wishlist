@@ -1,7 +1,26 @@
 import db from "../db.server";
 
 export const loader = async ({ request }) => {
-  return Response.json({ message: "Wishlist API is working" });
+
+  const id = new URL(request.url).searchParams.get("id");
+  const customerId = new URL(request.url).searchParams.get("customerId");
+  const task = new URL(request.url).searchParams.get("task");
+
+  if(task === "check" && id){
+    const CheckWishList = await db.wishlist.findFirst({
+      where: {
+        productId: id,
+      },
+    });
+
+      if(CheckWishList && CheckWishList.customerIds.includes(customerId)){
+        return Response.json({ message: true });
+      }else{
+        return Response.json({ message: false });
+      }
+  }
+  
+  return Response.json({ message: "Please Enter Valid Parameters" });
 };
 
 export const action = async ({ request }) => {
@@ -18,31 +37,31 @@ export const action = async ({ request }) => {
     productLink,
     instock,
   } = body;
-  try {
-    // Use findFirst instead of findUnique — no @@unique constraint needed
-    const existing = await db.wishlist.findFirst({
-      where: {
-        productId,
-        varientId,
-      },
-    });
+  
+    try {
+      // Use findFirst instead of findUnique — no @@unique constraint needed
+      const existing = await db.wishlist.findFirst({
+          where: {
+            productId,
+            varientId,
+          },
+      });
     
     // products
-    const products = await db.products.findFirst({
-      where: {
-        productId,
-      },
-    });
+      const products = await db.products.findFirst({
+          where: {
+            productId,
+          },
+      });
 
     // customers
     const customers = await db.customer.findFirst({
-      where: {
-        id: customerId,
-      },
+          where: {
+            id: customerId,
+          },
     });
 
     if (!existing && request.method == "POST" && customers.id==customerId) {
-
       try {
         const wishlist = await db.wishlist.create({
           data: {
@@ -92,8 +111,6 @@ export const action = async ({ request }) => {
       });
 
     } else if (existing && request.method == "POST" && customers.id==customerId) {
-      console.log("Existing wishlist entry found:", customers);
-      console.log("Customer ID:", customerId);  
       const UserIDs = existing.customerIds;
       
       if (UserIDs.includes(customerId)) {
@@ -101,6 +118,7 @@ export const action = async ({ request }) => {
           message: "Customer already wishlisted this product",
         });
       }
+      
       try {
         const wishlisted = await db.wishlist.update({
           where: { id: existing.id }, // use id — always safe
@@ -132,7 +150,6 @@ export const action = async ({ request }) => {
       }catch(error){
         return Response.json({ message: error.message }, { status: 500 });
       }
-
       
     } else if (existing && request.method == "DELETE") {
 
@@ -169,7 +186,6 @@ export const action = async ({ request }) => {
       });
     }
   } catch (error) {
-    console.log("-----------------------------------------error");
     return Response.json({ message: error.message }, { status: 500 });
   }
 };

@@ -20,12 +20,6 @@
     }
   }
 
-  function isWishlisted(id) {
-    return getWishlist().some(function (item) {
-      return item.id == id;
-    });
-  }
-
   function addToWishlist(product) {
     var list = getWishlist();
     if (
@@ -100,9 +94,6 @@
     if (!id) return;
 
     /* Set initial state */
-    if (isWishlisted(id)) {
-      btn.setAttribute("aria-pressed", "true");
-    }
 
     btn.addEventListener("click", function () {
       var added = btn.getAttribute("aria-pressed") === "true";

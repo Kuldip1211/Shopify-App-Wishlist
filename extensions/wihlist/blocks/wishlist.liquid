@@ -14,7 +14,10 @@
 {% assign product_title = product.title | default: '' | escape %}
 {% assign product_url = product.url | default: '#' %}
 {% assign product_image = product.featured_image | img_url: '400x' | default: '' %}
-{% assign product_price = product.price | money %}
+{% assign product_price = product.price | money_without_currency %}
+{% assign product_category = product.type | default: '' %}
+{% assign product_in_stock = product.available %}
+{%  assign customerID = customer.id | default: 0 %}
 
 <button
   class="wl-btn"
@@ -23,7 +26,11 @@
   data-product-title="{{ product_title }}"
   data-product-url="{{ product_url }}"
   data-product-image="{{ product_image }}"
+  data-product-category="{{ product_category }}"
+  data-product-in-stock="{{ product_in_stock }}"
   data-product-price="{{ product_price }}"
+  data-customer-id="{{ customerID }}"
+  data-wishlisted="false"
   aria-label="Add {{ product_title }} to wishlist"
   aria-pressed="false"
   type="button"
@@ -63,21 +70,52 @@
 
 {% comment %} on page load post userdata {% endcomment %}
 <script>
+document.addEventListener("DOMContentLoaded", function() {
+    async function isWishlisted() {
+    const Wishlistbutton = document.getElementById("Wishlistbtn")
+    
+    const product_id = Wishlistbutton.getAttribute("data-product-id")
 
-async function postUserData() {
-  try {
-    // 1. Check if customer exists
-    const response = await fetch("/apps/wishlist/api/customer?id={{ customer.id }}", {
-      method: 'GET',
+    const variant_id = product_id;
+    
+    const Customer_Id = Wishlistbutton.getAttribute("data-customer-id")
+
+    const Data = {
+      productid : product_id,
+      variant_id : product_id,
+      customer_id : Customer_Id
+    }
+
+    const response = await fetch("/apps/wishlist/api/wishlist?id=" + product_id + "&task=check&customerId=" + Customer_Id, {
+      method: "GET",
       headers: {
-        'Content-Type': 'application/json',
-        'ngrok-skip-browser-warning': '1',   // ✅ skips ngrok warning page
-        'bypass-tunnel-reminder': '1'         // ✅ extra safety
-      }
+        "Content-Type": "application/json",
+        "ngrok-skip-browser-warning": "1", // ✅ skips ngrok warning page
+        "bypass-tunnel-reminder": "1", // ✅ extra safety
+      },
     });
 
-    // 2. If not found (404), create the customer
-    if (response.status === 404) {
+    const data = await response.json()
+                if(data.message === true){
+                  Wishlistbutton.setAttribute("aria-pressed", "true");
+                }
+    }
+
+    isWishlisted();
+})
+            async function postUserData() {
+              try {
+                // 1. Check if customer exists
+    const response         = await fetch("/apps/wishlist/api/customer?id={{ customer.id }}", {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+                'ngrok-skip-browser-warning': '1',   // ✅ skips ngrok warning page
+                'bypass-tunnel-reminder': '1'         // ✅ extra safety
+              }
+            });
+            // 2. If not found (404), create the customer
+            if (response.status === 404) {
       const createResponse = await fetch("/apps/wishlist/api/customer", {
         method: "POST",
         headers: {
@@ -92,16 +130,16 @@ async function postUserData() {
           wishlistprice: 0,
         }),
       });
-
       if (!createResponse.ok) {
         throw new Error("Failed to create customer");
       }
     }
-
   } catch (error) {
     throw new Error("Error: " + error.message);
   }
+  
 }
+
 
 postUserData();
 </script>
