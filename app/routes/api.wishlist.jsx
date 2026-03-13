@@ -18,7 +18,6 @@ export const action = async ({ request }) => {
     productLink,
     instock,
   } = body;
-
   try {
     // Use findFirst instead of findUnique — no @@unique constraint needed
     const existing = await db.wishlist.findFirst({
@@ -27,16 +26,25 @@ export const action = async ({ request }) => {
         varientId,
       },
     });
-
+    
+    // products
     const products = await db.products.findFirst({
       where: {
         productId,
       },
     });
 
-    if (!existing && request.method == "POST") {
+    // customers
+    const customers = await db.customer.findFirst({
+      where: {
+        id: customerId,
+      },
+    });
+
+    if (!existing && request.method == "POST" && customers.id==customerId) {
+
       try {
-        const customer = await db.wishlist.create({
+        const wishlist = await db.wishlist.create({
           data: {
             productId,
             varientId,
@@ -52,7 +60,7 @@ export const action = async ({ request }) => {
       } catch (error) {
         console.error("Error creating wihslist entry:", error);
       }
-
+      
       try {
         const productEntry = await db.products.create({
           data: {
@@ -67,35 +75,67 @@ export const action = async ({ request }) => {
         console.error("Error creating product entry:", error);
       }
 
-      return Response.json({ message: "Wishlist created successfully" });
-    } else if (existing && request.method == "POST") {
-      const UserIDs = existing.customerIds;
+      try{ 
+        const UpdateCustomerDate = await db.customer.update({
+          where: { id: customerId },
+          data: { 
+            wishlistItems : customers.wishlistItems + 1 ,
+            wishlistprice : customers.wishlistprice + parseFloat(productPrice),
+          },
+        })
+      }catch(error){
+        console.error("Error updating customer wishlist data:", error);
+      }
+      
+      return Response.json({ 
+        message: "Wishlist created successfully",
+      });
 
+    } else if (existing && request.method == "POST" && customers.id==customerId) {
+      console.log("Existing wishlist entry found:", customers);
+      console.log("Customer ID:", customerId);  
+      const UserIDs = existing.customerIds;
+      
       if (UserIDs.includes(customerId)) {
         return Response.json({
           message: "Customer already wishlisted this product",
         });
       }
-
       try {
         const wishlisted = await db.wishlist.update({
           where: { id: existing.id }, // use id — always safe
           data: { customerIds: [...UserIDs, customerId] },
         });
-
+        
         const UpdateProduct = await db.products.update({
           where: { id: products.id },
           data: { productlistCount: products.productlistCount + 1 },
         });
 
-        return Response.json({
-          message: "Product added to wishlist",
-          data: wishlisted,
-        });
       } catch (error) {
+        console.error("Error updating wishlist entry:", error);
+      }
+
+      try{ 
+        const UpdateCustomerDate = await db.customer.update({
+          where: { id: customerId },
+          data: { 
+            wishlistItems : customers.wishlistItems + 1 ,
+            wishlistprice : customers.wishlistprice + parseFloat(productPrice),
+          },
+        })
+
+        return Response.json({
+          message: "Product added to wishlist" ,
+          data: UpdateCustomerDate,
+        });
+      }catch(error){
         return Response.json({ message: error.message }, { status: 500 });
       }
+
+      
     } else if (existing && request.method == "DELETE") {
+
       const UserIds = existing.customerIds;
 
       if (!UserIds.includes(customerId)) {
@@ -103,23 +143,33 @@ export const action = async ({ request }) => {
           message: "Customer has not wishlisted this product",
         });
       }
-
+      
       const wishlisted = await db.wishlist.update({
         where: { id: existing.id }, // use id — always safe
         data: { customerIds: UserIds.filter((id) => id !== customerId) },
       });
-
+      
       const UpdateProduct = await db.products.update({
         where: { id: products.id },
         data: { productlistCount: products.productlistCount - 1 },
       });
+      
+      const UpdateCustomerDate = await db.customer.update({
+          where: { id: customerId },
+          data: { 
+            wishlistItems : customers.wishlistItems - 1 ,
+            wishlistprice : customers.wishlistprice - parseFloat(productPrice),
+          },
+        })
 
       return Response.json({
         message: "Product removed from wishlist",
         data: wishlisted,
+        UpdateCustomerDate:UpdateCustomerDate
       });
     }
   } catch (error) {
+    console.log("-----------------------------------------error");
     return Response.json({ message: error.message }, { status: 500 });
   }
 };
