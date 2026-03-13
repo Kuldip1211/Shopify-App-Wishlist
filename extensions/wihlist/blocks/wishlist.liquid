@@ -27,6 +27,7 @@
   aria-label="Add {{ product_title }} to wishlist"
   aria-pressed="false"
   type="button"
+  id="Wishlistbtn"
 >
   <span class="wl-btn__track" aria-hidden="true">
     <!-- Outline heart -->
@@ -60,8 +61,55 @@
 <!-- ── Wishlist Toast notification ── -->
 <div class="wl-toast" aria-live="polite" role="status"></div>
 
+{% comment %} on page load post userdata {% endcomment %}
+<script>
+
+async function postUserData() {
+  try {
+    // 1. Check if customer exists
+    const response = await fetch("/apps/wishlist/api/customer?id={{ customer.id }}", {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'ngrok-skip-browser-warning': '1',   // ✅ skips ngrok warning page
+        'bypass-tunnel-reminder': '1'         // ✅ extra safety
+      }
+    });
+
+    // 2. If not found (404), create the customer
+    if (response.status === 404) {
+      const createResponse = await fetch("/apps/wishlist/api/customer", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id: {{ customer.id }} + "",
+          firstName: {{ customer.first_name | json }},
+          lastName: {{ customer.last_name | json }},
+          email: {{ customer.email | json }},
+          wishlistItems: 0,
+          wishlistprice: 0,
+        }),
+      });
+
+      if (!createResponse.ok) {
+        throw new Error("Failed to create customer");
+      }
+    }
+
+  } catch (error) {
+    throw new Error("Error: " + error.message);
+  }
+}
+
+postUserData();
+</script>
+
 {{ 'wishlist.css' | asset_url | stylesheet_tag }}
 <script src="{{ 'wishlist.js' | asset_url }}" defer="defer"></script>
+<script src="{{ 'apiwishlist.js' | asset_url }}" defer="defer"></script>
+
 
 {% schema %}
 {
