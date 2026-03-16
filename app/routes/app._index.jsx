@@ -7,6 +7,7 @@ import { useCustomerCount } from "./hooks/useCustomerCount";
 import { useActiveCustomerCount } from "./hooks/useActiveCustomerCount";
 import {useCustomerList} from "./hooks/customerListState"
 import { useMostListedProducts } from "./hooks/mostlistedproduct";
+import { useOrderConversion } from "./hooks/useOrderConversion";
 
 
 export const loader = async ({ request }) => {
@@ -80,12 +81,13 @@ export default function Index() {
   const { totalCount , todayCount, totalProducts } = useLoaderData()
   const { recentWishlists, fetchCustomerList } = useCustomerList()  
   const {   mostListedProducts , fetchMostListedProducts} = useMostListedProducts() 
+  const { totalConversion, todayConversion, fetchOrderConversion } = useOrderConversion()
   
   const stats = [
     { label: "Total Wishlists",  value: totalCount,  icon: "❤️", trend: "+" + todayCount , color: "#FF6B6B" },
     { label: "Products Saved",   value: totalProducts, icon: "🛍️", trend: "",  color: "#4ECDC4" },
     { label: "Total Users",     value: count,  icon: "👥", trend: "Active: "+activeCount, color: "#45B7D1" },
-    { label: "Conversion Rate",  value: "34.2%",  icon: "📈", trend: "+5%",  color: "#96CEB4" },
+    { label: "Conversion Rate",  value: `${totalConversion}%`,  icon: "📈", trend: `${todayConversion}% today`,  color: "#96CEB4" },
   ];
 
   const miniStats = [
@@ -99,6 +101,7 @@ export default function Index() {
     setTimeout(() => setAnimate(true), 100);
     fetchCustomerList(); // ✅ actually fetch the data on mount
     fetchMostListedProducts()
+    fetchOrderConversion()
   }, []);
 
 

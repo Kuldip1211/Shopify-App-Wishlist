@@ -22,6 +22,7 @@ export default function App() {
           <s-link href="/app/wishlist">All Wishlist</s-link>
           <s-link href="/app/oos">Out of Stock</s-link>
           <s-link href="/app/about">About US</s-link>
+          <s-link href="/app/order">Orders</s-link>
         </s-app-nav>
         <Outlet />
       </PolarisProvider>
