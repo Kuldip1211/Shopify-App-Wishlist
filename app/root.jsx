@@ -1,4 +1,9 @@
 import { Links, Meta, Outlet, Scripts, ScrollRestoration } from "react-router";
+import { RecoilRoot } from "recoil";
+import { CustomerCountLoader } from "../app/routes/CustomerCountLoader";
+import { ActiveCustomerCountLoader } from "../app/routes/ActiveCustomerCount";
+import { CustomerListLoader } from "../app/routes/Fetchs/CustomerList";
+// import { MostListProduct } from "../app/routes/Fetchs/MostListProduct";
 
 export default function App() {
   return (
@@ -15,9 +20,14 @@ export default function App() {
         <Links />
       </head>
       <body>
-        <Outlet />
-        <ScrollRestoration />
-        <Scripts />
+        <RecoilRoot>
+         <CustomerCountLoader /> 
+          <ActiveCustomerCountLoader /> 
+          <CustomerListLoader />                                                                                             
+          <Outlet />
+          <ScrollRestoration />
+          <Scripts />
+        </RecoilRoot>
       </body>
     </html>
   );

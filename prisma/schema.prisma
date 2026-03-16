@@ -34,12 +34,13 @@ model Session {
 }
 
 model Customer {
-  id            String     @id @unique
+  id            String   @id
   firstName     String
   lastName      String
-  email         String     @unique
-  wishlistItems Int        
-  wishlistprice Float
+  email         String   @unique
+  wishlistItems Int      @default(0)
+  wishlistprice Float    @default(0)
+  updatedAt     DateTime @updatedAt
 }
 
 model Wishlist {
