@@ -5,9 +5,41 @@ export const loader = async ({ request }) => {
     try {
         const url = new URL(request.url);
         const id = url.searchParams.get("id");
+        const active = url.searchParams.get("active");
 
-        if (!id) {
-            return Response.json({ message: "Missing customer id" }, { status: 400 });
+        if (!id && active === "true") {
+            const sevenDaysAgo = new Date();
+            sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+            const recentCustomers = await db.customer.findMany({
+                where: {
+                    updatedAt: {
+                        gte: sevenDaysAgo,  // 👈 greater than or equal to 7 days ago
+                    },
+                },
+                orderBy: {
+                    updatedAt: "desc",     // 👈 latest first
+                },
+            });
+
+            let totalCount = recentCustomers.length;
+
+            return Response.json({
+                totalCount
+            });
+        }
+        if (!id && !active) {
+            const totalCount = await db.customer.count();
+            return Response.json({ totalCount });
+        }
+
+        if(!id && active === "all"){
+            const customers = await db.customer.findMany({
+                orderBy: {
+                    updatedAt: "desc",
+                },
+            });
+            return Response.json({ customers });
         }
 
         const customer = await db.customer.findUnique({

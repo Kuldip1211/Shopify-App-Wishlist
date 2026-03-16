@@ -19,9 +19,59 @@ export const loader = async ({ request }) => {
         return Response.json({ message: false });
       }
   }
+  // ✅ Fetch top 4 most listed products
+  if (task === "top" && !id) {
+    try {
+      const wishlists = await db.wishlist.findMany({
+        select: {
+          productId: true,
+          productName: true,
+          productImage: true,
+          productcategory: true,
+          productPrice: true,
+          customerIds: true,
+        },
+      });
 
+      // Build a map of productId → aggregated data
+      const productMap = {};
 
-  
+      wishlists.forEach((item) => {
+        const key = item.productId;
+
+        if (!productMap[key]) {
+          productMap[key] = {
+            productId: item.productId,
+            productName: item.productName,
+            productImage: item.productImage,
+            productcategory: item.productcategory,
+            productPrice: item.productPrice,
+            totalListed: 0,
+          };
+        }
+
+        // customerIds is JSON — parse safely
+        const ids = Array.isArray(item.customerIds)
+          ? item.customerIds
+          : JSON.parse(item.customerIds || "[]");
+
+        productMap[key].totalListed += ids.length;
+      });
+
+      // Sort by totalListed desc → take top 4
+      const top4 = Object.values(productMap)
+        .sort((a, b) => b.totalListed - a.totalListed)
+        .slice(0, 4);
+
+      return Response.json({ topProducts: top4 });
+
+    } catch (error) {
+      return Response.json(
+        { message: "Error fetching top products" },
+        { status: 500 }
+      );
+    }
+  }
   return Response.json({ message: "Please Enter Valid Parameters" });
 };
 
