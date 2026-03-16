@@ -2,7 +2,7 @@ import { Links, Meta, Outlet, Scripts, ScrollRestoration } from "react-router";
 import { RecoilRoot } from "recoil";
 import { CustomerCountLoader } from "../app/routes/CustomerCountLoader";
 import { ActiveCustomerCountLoader } from "../app/routes/ActiveCustomerCount";
-import { CustomerListLoader } from "../app/routes/jbjbjkbkjbjFetchs/CustomerList";
+import { CustomerListLoader } from "../app/routes/Fetchs/CustomerList";
 // import { MostListProduct } from "../app/routes/Fetchs/MostListProduct";
 
 export default function App() {
@@ -21,9 +21,9 @@ export default function App() {
       </head>
       <body>
         <RecoilRoot>
-          {/* <CustomerCountLoader />
-          <ActiveCustomerCountLoader /> */}
-          {/* <CustomerListLoader />                                                                                              */}
+         <CustomerCountLoader /> 
+          <ActiveCustomerCountLoader /> 
+          <CustomerListLoader />                                                                                             
           <Outlet />
           <ScrollRestoration />
           <Scripts />
