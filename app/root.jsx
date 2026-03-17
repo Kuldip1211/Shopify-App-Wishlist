@@ -3,6 +3,7 @@ import { RecoilRoot } from "recoil";
 import { CustomerCountLoader } from "../app/routes/CustomerCountLoader";
 import { ActiveCustomerCountLoader } from "../app/routes/ActiveCustomerCount";
 import { CustomerListLoader } from "../app/routes/Fetchs/CustomerList";
+import { OrderConversionLoader } from "../app/routes/Fetchs/OrderConversion";
 // import { MostListProduct } from "../app/routes/Fetchs/MostListProduct";
 
 export default function App() {
@@ -24,6 +25,7 @@ export default function App() {
          <CustomerCountLoader /> 
           <ActiveCustomerCountLoader /> 
           <CustomerListLoader />                                                                                             
+          <OrderConversionLoader />
           <Outlet />
           <ScrollRestoration />
           <Scripts />

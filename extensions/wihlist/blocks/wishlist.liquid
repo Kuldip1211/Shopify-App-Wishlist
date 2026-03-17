@@ -15,7 +15,7 @@
 {% assign product_url = product.url | default: '#' %}
 {% assign product_image = product.featured_image | img_url: '400x' | default: '' %}
 {% assign product_price = product.price | money_without_currency %}
-{% assign product_category = product.type | default: '' %}
+{% assign product_category = product.category | default: '' %}
 {% assign product_in_stock = product.available %}
 {%  assign customerID = customer.id | default: 0 %}
 
