@@ -3,6 +3,7 @@ import {
   AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
 } from "recharts";
+import { useTodayAdminData } from "./hooks/todayAdminDataState";
 import "./styled/wishlist.css";
 
 /* ──────────────────────────────────────
@@ -169,12 +170,18 @@ const OosTooltip = ({ active, payload, label, oosOnly }) => {
    MAIN COMPONENT
 ────────────────────────────────────── */
 export default function WishlistDashboard() {
+
+  const { todayAdminData , fetchTodayAdminData  } = useTodayAdminData();
+
   const [selectedUser, setSelectedUser] = useState(null);
   const [modalAnim,    setModalAnim]    = useState(false);
   const [search,       setSearch]       = useState("");
   const [animated,     setAnimated]     = useState(false);
 
-  useEffect(() => { setTimeout(() => setAnimated(true), 120); }, []);
+  useEffect(() => { 
+    setTimeout(() => setAnimated(true), 120); 
+    fetchTodayAdminData();
+  }, []);
 
   const openModal  = (user) => { setSelectedUser(user); setTimeout(() => setModalAnim(true), 10); };
   const closeModal = ()     => { setModalAnim(false); setTimeout(() => setSelectedUser(null), 280); };
@@ -197,11 +204,11 @@ export default function WishlistDashboard() {
 
   /* sidebar summary items */
   const summarySections = [
-    { label: "Total Customers", value: users.length,              icon: "👥", color: "#45B7D1", delay: "0s"    },
-    { label: "Wishlist Items",  value: totalItems,                icon: "❤️", color: "#E63946", delay: "0.06s" },
+    { label: "Total Customers", value: todayAdminData.WholeData?.totalCustomers,              icon: "👥", color: "#45B7D1", delay: "0s"    },
+    { label: "Wishlist Items",  value: todayAdminData.WholeData?.totalCount,                icon: "❤️", color: "#E63946", delay: "0.06s" },
     { label: "Unique Products", value: totalProducts,             icon: "🛍️", color: "#F4A261", delay: "0.12s" },
-    { label: "Total Value",     value: `$${totalValue.toLocaleString()}`, icon: "💰", color: "#BB8FCE", delay: "0.18s" },
-    { label: "Out of Stock",    value: totalOutOfStock,            icon: "🚫", color: "#E63946", delay: "0.24s" },
+    { label: "Total Value",     value: "$" + todayAdminData.WholeData?.totalRevenue, icon: "💰", color: "#BB8FCE", delay: "0.18s" },
+    { label: "Out of Stock",    value: todayAdminData.WholeData?.OutOfStock,            icon: "🚫", color: "#E63946", delay: "0.24s" },
   ];
 
   /* status rows */
@@ -213,10 +220,10 @@ export default function WishlistDashboard() {
 
   /* kpi cards */
   const kpiCards = [
-    { label: "Total Wishlists", value: users.length,                          sub: "↑ 12% this week",  icon: "❤️", color: "#E63946", delay: "0s"    },
+    { label: "Today Total Wishlists", value: todayAdminData.todayTotalWishlist,      sub: "↑ "+ todayAdminData.todayincrementWishlist + "% today",  icon: "❤️", color: "#E63946", delay: "0s"    },
     { label: "Items Saved",     value: totalItems,                             sub: "↑ 8% this week",   icon: "🛍️", color: "#4ECDC4", delay: "0.08s" },
-    { label: "Total Value",     value: `$${totalValue.toLocaleString()}`,      sub: "↑ 24% this month", icon: "💰", color: "#F4A261", delay: "0.16s" },
-    { label: "Avg per User",    value: Math.round(totalItems / users.length),  sub: "items per wishlist",icon: "📊", color: "#BB8FCE", delay: "0.24s" },
+    { label: "Today Total Value",     value: "$" + todayAdminData.todayTotalValue,      sub: "↑ "+ todayAdminData.todayTotalValueIncrement +"% today", icon: "💰", color: "#F4A261", delay: "0.16s" },
+    { label: "Avg per User",    value: todayAdminData.itemPerWishlist,  sub: "items per wishlist",icon: "📊", color: "#BB8FCE", delay: "0.24s" },
   ];
 
   /* modal pills */
@@ -229,7 +236,9 @@ export default function WishlistDashboard() {
   /* ── RENDER ── */
   return (
     <div id="app-root">
-
+      {/* <code>
+        <pre>{JSON.stringify(todayAdminData, null, 2)}</pre>
+      </code> */}
       {/* ── HEADER ── */}
       <header id="header">
         <div id="header-brand">

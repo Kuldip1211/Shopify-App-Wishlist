@@ -36,9 +36,6 @@ export const action = async ({ request }) => {
         },
     })
 
-    console.log("--------------------------------------------");
-    console.log("Customer IDs with the deleted product in their wishlist:", customerIds);
-
     const deleteWishlistEntries = await db.wishlist.deleteMany({
         where: {
           productId: productId,
