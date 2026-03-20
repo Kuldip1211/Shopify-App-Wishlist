@@ -454,7 +454,7 @@ export const action = async ({ request }) => {
 
 
     const start = new Date();
-    // start.setDate(start.getDate() - 1);
+    // start.setDate(start.getDate() - 2);
 
     const day = String(start.getDate()).padStart(2, '0');
     const month = String(start.getMonth() + 1).padStart(2, '0'); // months are 0-based
@@ -635,8 +635,12 @@ export const action = async ({ request }) => {
               user_id: customerId,
             }
           })
+          
+          return Response.json({ message: "Product added to wishlist", id: updateDailyAnalytics.id });
+
         } catch (error) {
           console.error("Error creating removeWishlistData entry:", error);
+          return Response.json({ message: "Product can not beadded to wishlist" ,  error : error });
         }
       } else {
         console.log("It is null")
@@ -657,13 +661,15 @@ export const action = async ({ request }) => {
               user_id: customerId,
             }
           })
+
+          return Response.json({ message: "Product added to wishlist", id: updateDailyAnalytics.id });
+
         } catch (error) {
           console.error("Error creating removeWishlistData entry:", error);
+          return Response.json({ message: "Product can not beadded to wishlist" ,  error : error });
         }
 
       }
-
-      return Response.json({ message: "Product added to wishlist", });
 
     } else if (existing && request.method == "DELETE") {
 

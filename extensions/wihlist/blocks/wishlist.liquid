@@ -14,16 +14,19 @@
 {% assign product_price = product.price | money_without_currency %}
 {% assign product_url = product.url | default: '#' %}
 {% assign product_variant_id = 0 %}
+{% assign product_in_stock = product.available %}
+{% assign product_image = product.featured_image | img_url: '400x' | default: '' %}
 {% if product.variants.size > 1 %}
   {% assign product_variant_id = product.selected_or_first_available_variant.id %}
   {% assign product_price = product.selected_or_first_available_variant.price | money_without_currency %}
   {% assign product_url = product.selected_or_first_available_variant.url | default: '#' %}
+  {% assign product_in_stock = product.selected_or_first_available_variant.available %}
+  {% assign product_image = product.selected_or_first_available_variant.featured_image | img_url: '400x' | default: product_image %}
 {% endif %}
 
+{% assign product_image = product.selected_or_first_available_variant.featured_image | img_url: '400x' | default: product_image %}
 {% assign product_title = product.title | default: '' | escape %}
-{% assign product_image = product.featured_image | img_url: '400x' | default: '' %}
 {% assign product_category = product.type | default: 'not get' %}
-{% assign product_in_stock = product.available %}
 {%  assign customerID = customer.id | default: 0 %}
 
 <button
@@ -181,13 +184,32 @@ const originalReplaceState = history.replaceState.bind(history);
 history.replaceState = async function (...args) {
   originalReplaceState(...args);
 
+  Wishlistbutton.removeAttribute("data-product-image");
+
   const params = new URLSearchParams(window.location.search);
   const variantId = params.get("variant");
-
+ 
+  const variant = productVariants.find(v => v.id == variantId);
+  
   // Set attributes
   Wishlistbutton.setAttribute("data-product-varient-id", variantId);
+  
+  /**
+   *! Set feactuen Image
+   **/
 
-  const variant = productVariants.find(v => v.id == variantId);
+
+   const feacturedImage = variant.featured_image
+
+   const IMAGES = JSON.stringify(feacturedImage.src);
+
+   alert(IMAGES)
+
+   let url = IMAGES
+  .replace(/&quot;/g, "")
+  .replace(/^"+|"+$/g, ""); // remove quotes from start/end
+
+   Wishlistbutton.setAttribute("data-product-image",url);
 
   if (variant) {
     Wishlistbutton.setAttribute(
@@ -207,7 +229,9 @@ history.replaceState = async function (...args) {
     );
   }
 
-  // API call
+  /** 
+   * TODO API Fetch when Change A Variant 
+   * **/
   const response = await fetch(
     `/apps/wishlist/api/wishlist?varientId=${variantId}&id=${product_id}&task=check&customerId=${Customer_Id}`,
     {
@@ -224,8 +248,10 @@ history.replaceState = async function (...args) {
 
   if (data.message === true) {
     Wishlistbutton.setAttribute("aria-pressed", "true");
+    Wishlistbutton.setAttribute("data-daily-analytics-id", data.DailyAnalyticsId);
   } else {
     Wishlistbutton.setAttribute("aria-pressed", "false");
+    Wishlistbutton.removeAttribute("data-daily-analytics-id");
   }
 };
 

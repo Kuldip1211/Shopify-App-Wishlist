@@ -82,6 +82,7 @@ btn.addEventListener("click", async function () {
           }
 
       const data = await response.json();
+      btn.removeAttribute("data-daily-analytics-id"); // Remove the DailyAnalyticsId attribute after deletion
 
   } catch (error) {
           alert("Error: " + error.message);
