@@ -5,6 +5,83 @@ import {
 } from "recharts";
 import { useTodayAdminData } from "./hooks/todayAdminDataState";
 import "./styled/wishlist.css";
+import { useLoaderData } from "react-router";
+import { authenticate } from "../shopify.server";
+
+export const loader = async ({ request }) => {
+  const { admin } = await authenticate.admin(request);
+
+  let allProducts = [];
+  let hasNextPage = true;
+  let cursor = null;
+
+  while (hasNextPage) {
+    const paginatedQuery = `#graphql
+      query getProductTypes($cursor: String) {
+        products(first: 250, after: $cursor) {
+          edges {
+            node {
+              productType
+            }
+          }
+          pageInfo {
+            hasNextPage
+            endCursor
+          }
+        }
+      }
+    `;
+
+    const response = await admin.graphql(paginatedQuery, {
+      variables: { cursor },
+    });
+
+    const { data } = await response.json();
+    const { edges, pageInfo } = data.products;
+
+    allProducts.push(...edges.map((e) => e.node.productType));
+
+    hasNextPage = pageInfo.hasNextPage;
+    cursor = pageInfo.endCursor;
+  }
+
+  // Count occurrences of each product type
+  const productTypeCounts = allProducts.reduce((acc, type) => {
+    const key = type || "Uncategorized";
+    acc[key] = (acc[key] || 0) + 1;
+    return acc;
+  }, {});
+
+  // Generate unique random hex colors (no white/black)
+  const generateColor = (usedColors) => {
+    let color;
+    do {
+      const r = Math.floor(Math.random() * 186) + 40; // 40–225
+      const g = Math.floor(Math.random() * 186) + 40;
+      const b = Math.floor(Math.random() * 186) + 40;
+
+      // Skip near-white (all channels > 200) and near-black (all channels < 50)
+      if (r > 200 && g > 200 && b > 200) continue;
+      if (r < 50 && g < 50 && b < 50) continue;
+
+      color = `#${r.toString(16).padStart(2, "0")}${g.toString(16).padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
+    } while (usedColors.has(color));
+
+    usedColors.add(color);
+    return color;
+  };
+
+  const usedColors = new Set();
+
+  // Convert to array with unique colors
+  const productTypes = Object.entries(productTypeCounts).map(([type, count]) => ({
+    type,
+    count,
+    color: generateColor(usedColors),
+  }));
+
+  return Response.json({ productTypes });
+};
 
 /* ──────────────────────────────────────
    DATA
@@ -172,6 +249,7 @@ const OosTooltip = ({ active, payload, label, oosOnly }) => {
 export default function WishlistDashboard() {
 
   const { todayAdminData , fetchTodayAdminData  } = useTodayAdminData();
+  const { productTypes } = useLoaderData();
 
   const [selectedUser, setSelectedUser] = useState(null);
   const [modalAnim,    setModalAnim]    = useState(false);
@@ -197,6 +275,34 @@ export default function WishlistDashboard() {
     u.name.toLowerCase().includes(search.toLowerCase()) ||
     u.email.toLowerCase().includes(search.toLowerCase())
   );
+
+  const oosOnly2 = [
+  {
+    category: "Furniture",
+    outOfStock: 12,
+    total: 50
+  },
+  {
+    category: "Electronics",
+    outOfStock: 8,
+    total: 40
+  },
+  {
+    category: "Clothing",
+    outOfStock: 15,
+    total: 60
+  },
+  {
+    category: "Kitchen",
+    outOfStock: 5,
+    total: 30
+  },
+  {
+    category: "Decor",
+    outOfStock: 9,
+    total: 25
+  }
+];
 
   const oosOnly = outOfStockData
     .filter(c => c.outOfStock > 0)
@@ -236,9 +342,11 @@ export default function WishlistDashboard() {
   /* ── RENDER ── */
   return (
     <div id="app-root">
-      {/* <code>
-        <pre>{JSON.stringify(todayAdminData, null, 2)}</pre>
-      </code> */}
+    <pre>
+      <code>
+        {JSON.stringify(todayAdminData, null, 2)}
+      </code>
+    </pre>
       {/* ── HEADER ── */}
       <header id="header">
         <div id="header-brand">
@@ -287,17 +395,17 @@ export default function WishlistDashboard() {
           {/* By Category */}
           <section>
             <div className="sidebar-section-label sidebar-section-label--mb14">By Category</div>
-            {categoryData.map((cat, i) => (
+            {productTypes.map((cat, i) => (
               <div key={i} className="cat-bar-row">
                 <div className="cat-bar-header">
-                  <span className="cat-bar-name">{cat.name}</span>
-                  <span className="cat-bar-pct" style={{ color: cat.color }}>{cat.value}%</span>
+                  <span className="cat-bar-name">{cat.type}</span>
+                  <span className="cat-bar-pct" style={{ color: cat.color }}>{cat.count}%</span>
                 </div>
                 <div className="cat-bar-track">
                   <div
                     className="cat-bar-fill"
                     style={{
-                      width: animated ? `${cat.value}%` : "0%",
+                      width: animated ? `${cat.value}%` : "100%",
                       background: `linear-gradient(90deg,${cat.color}77,${cat.color})`,
                       transitionDelay: `${i * 0.1}s`,
                     }}
@@ -372,7 +480,7 @@ export default function WishlistDashboard() {
                 </div>
               </div>
               <ResponsiveContainer width="100%" height={175}>
-                <AreaChart data={areaData}>
+                <AreaChart data={todayAdminData.DailyAnalistresult}>
                   <defs>
                     <linearGradient id="gSaves" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%"  stopColor="#E63946" stopOpacity={0.18} />
@@ -387,8 +495,8 @@ export default function WishlistDashboard() {
                   <XAxis dataKey="day"    tick={{ fill: "#6B7280", fontSize: 11, fontWeight: 500 }} axisLine={false} tickLine={false} />
                   <YAxis                  tick={{ fill: "#6B7280", fontSize: 11 }} axisLine={false} tickLine={false} width={30} />
                   <Tooltip content={<CustomTooltip />} />
-                  <Area type="monotone" dataKey="saves" name="Saves"    stroke="#E63946" strokeWidth={2.5} fill="url(#gSaves)" dot={false} />
-                  <Area type="monotone" dataKey="value" name="Value $"  stroke="#4ECDC4" strokeWidth={2.5} fill="url(#gValue)" dot={false} />
+                  <Area type="monotone" dataKey="totalproduct" name="Saves"    stroke="#E63946" strokeWidth={2.5} fill="url(#gSaves)" dot={false} />
+                  <Area type="monotone" dataKey="revenue" name="Value $"  stroke="#4ECDC4" strokeWidth={2.5} fill="url(#gValue)" dot={false} />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
@@ -399,17 +507,17 @@ export default function WishlistDashboard() {
               <div className="chart-subtitle" style={{ marginBottom: 14 }}>Product distribution</div>
               <ResponsiveContainer width="100%" height={145}>
                 <PieChart>
-                  <Pie data={categoryData} cx="50%" cy="50%" innerRadius={44} outerRadius={66} paddingAngle={3} dataKey="value">
-                    {categoryData.map((c, i) => <Cell key={i} fill={c.color} />)}
+                  <Pie data={productTypes} cx="50%" cy="50%" innerRadius={44} outerRadius={66} paddingAngle={3} dataKey="count">
+                    {productTypes.map((c, i) => <Cell key={c.type} fill={c.color} />)}
                   </Pie>
-                  <Tooltip content={<CustomTooltip />} />
+                  <Tooltip formatter={(value, name, props) => [value, props.payload.type]} />
                 </PieChart>
               </ResponsiveContainer>
               <div className="pie-legend">
-                {categoryData.map((c, i) => (
+                {productTypes.map((c, i) => (
                   <div key={i} className="pie-legend-item">
                     <div className="pie-legend-dot" style={{ background: c.color }} />
-                    <span className="pie-legend-name">{c.name}</span>
+                    <span className="pie-legend-name">{c.type}</span>
                   </div>
                 ))}
               </div>
@@ -430,17 +538,17 @@ export default function WishlistDashboard() {
             </div>
 
             <ResponsiveContainer width="100%" height={230}>
-              <BarChart data={oosOnly} barSize={42} margin={{ top: 24, right: 8, left: 0, bottom: 0 }}>
+              <BarChart data={oosOnly2} barSize={42} margin={{ top: 24, right: 8, left: 0, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" vertical={false} />
                 <XAxis dataKey="category" tick={{ fill: "#6B7280", fontSize: 12, fontWeight: 600 }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fill: "#6B7280", fontSize: 11 }} axisLine={false} tickLine={false} width={24} allowDecimals={false} />
-                <Tooltip content={(props) => <OosTooltip {...props} oosOnly={oosOnly} />} />
+                <Tooltip content={(props) => <OosTooltip {...props} oosOnly={oosOnly2} />} />
                 <Bar
                   dataKey="outOfStock"
                   name="Out of Stock"
                   radius={[8, 8, 0, 0]}
                   label={({ x, y, width, value, index }) => {
-                    const d = oosOnly[index];
+                    const d = oosOnly2[index];
                     return (
                       <g>
                         <text x={x + width / 2} y={y - 6}  textAnchor="middle" fill="#E63946" fontWeight={800} fontSize={13}>🚫 {value}</text>

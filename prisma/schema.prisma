@@ -61,6 +61,7 @@ model Wishlist {
 model Products {
   id              Int   @id @default(autoincrement()) 
   productId       String
+  variantId       String
   productName     String
   productcategory String 
   productlistCount   Int
@@ -76,4 +77,14 @@ model DailyAnalytics {
   revenue           Float    @default(0)
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
+}
+
+model RemoveWishlistData {
+  id                    Int     @id @default(autoincrement())
+  dailyAnalytics_id     Int     
+  product_id            String
+  variant_id            String
+  user_id               String
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
 }

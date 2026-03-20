@@ -1,21 +1,43 @@
 import { empty } from "@prisma/client/runtime/library";
 import db from "../db.server";
 import { authenticate, unauthenticated } from "../shopify.server";
+import { data } from "react-router";
 
+// ----------------------------------------------------------------------------------------------------------------------------------------------------
+//                                                            GET - Check wishlist status / Get top 4 most wishlisted products / Get wishlist analytics
+// ---------------------------------------------------------------------------------------------------------------------------------------------------- 
 export const loader = async ({ request }) => {
+  // this is productid
   const id = new URL(request.url).searchParams.get("id");
+
+  // this is variant id 
+  const varientId = new URL(request.url).searchParams.get("varientId");
+
   const customerId = new URL(request.url).searchParams.get("customerId");
   const task = new URL(request.url).searchParams.get("task");
 
   if (task === "check" && id) {
+    console.log("Checking wishlist status for productId:", id, "variantId:", varientId, "customerId:", customerId);
     const CheckWishList = await db.wishlist.findFirst({
       where: {
         productId: id,
+        varientId: varientId,
       },
     });
 
+    const DailyanalistID = await db.removeWishlistData.findFirst({
+      where: {
+        product_id: id,
+        variant_id: varientId,
+        user_id: customerId,
+      },
+      select: {
+        dailyAnalytics_id: true,
+      }
+    })
+
     if (CheckWishList && CheckWishList.customerIds.includes(customerId)) {
-      return Response.json({ message: true });
+      return Response.json({ message: true, DailyAnalyticsId: DailyanalistID?.dailyAnalytics_id ?? "0" });
     } else {
       return Response.json({ message: false });
     }
@@ -87,6 +109,76 @@ export const loader = async ({ request }) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
+
+    //get data from daily analytics table for today date
+    // start = 6 days ago (including today = total 7 days)
+    const start2 = new Date();
+    // start.setDate(start.getDate() - 1);
+
+    const day2 = String(start2.getDate()).padStart(2, '0');
+    const month2 = String(start2.getMonth() + 1).padStart(2, '0'); // months are 0-based
+    const year2 = String(start2.getFullYear()).slice(-2); // last 2 digits
+
+    const formattedDate2 = `${day2}-${month2}-${year2}`;
+    console.log("Today's date (formatted):", formattedDate2);
+
+    // fetch records directly using createdAt
+    const records = await db.dailyAnalytics.findMany({
+      where: {
+        date : formattedDate2
+      },
+    });
+
+    const TodatPRoduct = records[0]?.totalproduct ?? 0;
+    
+    console.log("------------------------------------------------------------------------------------------------------------------");
+    console.log("------------------------------------------------------------------------------------------------------------------");
+    console.log("Daily Analytics records for today:", records);
+    console.log("TodatPRoduct:", TodatPRoduct);
+    console.log("------------------------------------------------------------------------------------------------------------------");
+    console.log("------------------------------------------------------------------------------------------------------------------");
+    console.log("------------------------------------------------------------------------------------------------------------------");
+    console.log("------------------------------------------------------------------------------------------------------------------");
+    console.log("------------------------------------------------------------------------------------------------------------------");
+    console.log("------------------------------------------------------------------------------------------------------------------");
+    console.log("------------------------------------------------------------------------------------------------------------------");
+    console.log("------------------------------------------------------------------------------------------------------------------");
+
+    // prepare last 7 days map
+    const daysMap = {};
+
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(today.getDate() - i);
+
+      const key = d.toISOString().split("T")[0]; // YYYY-MM-DD
+      const dayName = d.toLocaleDateString("en-US", { weekday: "short" });
+
+      daysMap[key] = {
+        day: dayName,
+        totalproduct: 0,
+        revenue: 0
+      };
+    }
+
+    // fill actual data
+    records.forEach(r => {
+      const key = new Date(r.createdAt).toISOString().split("T")[0];
+
+      if (daysMap[key]) {
+        daysMap[key].totalproduct += r.totalproduct;
+        daysMap[key].revenue += r.revenue;
+      }
+    });
+
+    const DailyAnalistresult = Object.values(daysMap);
+
+    console.log("------------------------------------------------------------------------------------------------------------------");
+    console.log("                                                     Daily Analytics Data                                         ");
+    console.log("------------------------------------------------------------------------------------------------------------------")
+    console.log("📊 Final Weekly Data:", DailyAnalistresult);
+
+
     const todayResult = await db.products.aggregate({
       _sum: {
         productlistCount: true,
@@ -106,18 +198,30 @@ export const loader = async ({ request }) => {
       },
     });
 
+
+    const start = new Date();
+    // start.setDate(start.getDate() + 1);
+    const day = String(start.getDate()).padStart(2, '0');
+    const month = String(start.getMonth() + 1).padStart(2, '0'); // months are 0-based
+    const year = String(start.getFullYear()).slice(-2); // last 2 digits
+
+    const formattedDate = `${day}-${month}-${year}`;
+
+    console.log("?????????///////%%%%%%%%%%%%$4444444444444444443333333#############3");
+    console.log("Today's date (formatted):", formattedDate);
+
     // Today's revenue
-    const todayRevenueResult = await db.customer.aggregate({
-      _sum: {
-        wishlistprice: true,
-      },
+    const todayRevenueResult = await db.dailyAnalytics.findFirst({
       where: {
-        updatedAt: {
-          gte: today,
-        },
+        date: formattedDate
       },
+      select: {
+        revenue: true,
+      }
     });
 
+    console.log("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
+    console.log(todayRevenueResult);
 
     // Total customers count
     const totalCustomers = await db.customer.count();
@@ -136,14 +240,14 @@ export const loader = async ({ request }) => {
     // total count odf wishlist
     const totalCount = result._sum.productlistCount ?? 0;
     // today Total Count
-    const todaytotalCount = todayResult._sum.productlistCount ?? 10;
+    const todaytotalCount = TodatPRoduct;
     // how much today growth in percentage of wishlist count
     let rst = (todaytotalCount * 100) / totalCount
     const todayincrementWishlist = Math.round(rst * 100) / 100;
     // total revenue
     const totalRevenue = revenueResult._sum.wishlistprice ?? 0;
     //today revenue
-    const todayRevenue = todayRevenueResult._sum.wishlistprice ?? 0;
+    const todayRevenue = (todayRevenueResult?.revenue ?? 0).toFixed(2);
     // how much today growth in percentage of revenue
     let revenueRst = (todayRevenue * 100) / totalRevenue
     const todayRevenuePercentage = Math.round(revenueRst * 100) / 100;
@@ -166,7 +270,8 @@ export const loader = async ({ request }) => {
       todayRevenue,
       todayRevenuePercentage,
       AvgperUSer,
-      AllData
+      AllData,
+      DailyAnalistresult
     });
   }
 
@@ -174,6 +279,9 @@ export const loader = async ({ request }) => {
 };
 
 
+// ----------------------------------------------------------------------------------------------------------------------------------------------------
+//                                                            POST - Add to wishlist / DELETE - Remove from wishlist
+// ----------------------------------------------------------------------------------------------------------------------------------------------------
 export const action = async ({ request }) => {
   const body = await request.json();
 
@@ -186,6 +294,7 @@ export const action = async ({ request }) => {
     productcategory,
     productImage,
     productLink,
+    DailyAnalyticsId,
     instock,
   } = body;
 
@@ -212,23 +321,21 @@ export const action = async ({ request }) => {
       },
     });
 
-    const today = new Date().getDate();
-
 
     const start = new Date();
-    start.setDate(start.getDate() + 1);
+    // start.setDate(start.getDate() - 1);
 
     const day = String(start.getDate()).padStart(2, '0');
     const month = String(start.getMonth() + 1).padStart(2, '0'); // months are 0-based
     const year = String(start.getFullYear()).slice(-2); // last 2 digits
 
     const formattedDate = `${day}-${month}-${year}`;
-
+    console.log("Today's date (formatted):", formattedDate);
 
 
     const exitsDailyAnalytics = await db.dailyAnalytics.findFirst({
       where: {
-        date: formattedDate
+        date: formattedDate,
       }
     })
 
@@ -257,6 +364,7 @@ export const action = async ({ request }) => {
           data: {
             productId,
             productName,
+            variantId: varientId,
             productcategory,
             productlistCount: 1,
             instock, // Initialize with 1 since it's being wishlisted now
@@ -290,21 +398,53 @@ export const action = async ({ request }) => {
             revenue: exitsDailyAnalytics.revenue + parseFloat(productPrice),
           }
         })
+
+        try {
+          const removeWishlistData = await db.removeWishlistData.create({
+            data: {
+              dailyAnalytics_id: updateDailyAnalytics.id,
+              product_id: productId,
+              variant_id: varientId,
+              user_id: customerId,
+            }
+          })
+        } catch (error) {
+          console.error("Error creating removeWishlistData entry:", error);
+        }
+
+        return Response.json({
+          message: "Wishlist created successfully",
+          id: updateDailyAnalytics.id
+        });
       } else {
         console.log("It is null")
-        await db.dailyAnalytics.create({
+        const DailyAnalystics = await db.dailyAnalytics.create({
           data: {
             date: formattedDate, // ✅ use Date object (not formatted string)
             totalproduct: 1,
             revenue: parseFloat(productPrice),
           },
         });
+
+        try {
+          console.log("DailyAnalystics:--------------------");
+          const removeWishlistData = await db.removeWishlistData.create({
+            data: {
+              dailyAnalytics_id: DailyAnalystics.id,
+              product_id: productId,
+              variant_id: varientId,
+              user_id: customerId,
+            }
+          })
+        } catch (error) {
+          console.error("Error creating removeWishlistData entry:", error);
+        }
+
+        return Response.json({
+          message: "Wishlist created successfully",
+          id: DailyAnalystics.id
+        });
       }
-
-      return Response.json({
-        message: "Wishlist created successfully",
-      });
-
     } else if (existing && request.method == "POST" && customers.id == customerId) {
       const UserIDs = existing.customerIds;
 
@@ -323,7 +463,7 @@ export const action = async ({ request }) => {
         });
 
         const UpdateProduct = await db.products.update({
-          where: { id: products.id },
+          where: { id: products.id, variantId: varientId },
           data: { productlistCount: products.productlistCount + 1 },
         });
 
@@ -354,15 +494,42 @@ export const action = async ({ request }) => {
             revenue: exitsDailyAnalytics.revenue + parseFloat(productPrice),
           }
         })
+
+        try {
+          const removeWishlistData = await db.removeWishlistData.create({
+            data: {
+              dailyAnalytics_id: updateDailyAnalytics.id,
+              product_id: productId,
+              variant_id: varientId,
+              user_id: customerId,
+            }
+          })
+        } catch (error) {
+          console.error("Error creating removeWishlistData entry:", error);
+        }
       } else {
         console.log("It is null")
-        await db.dailyAnalytics.create({
+        const DailyAnalystics = await db.dailyAnalytics.create({
           data: {
             date: formattedDate, // ✅ use Date object (not formatted string)
             totalproduct: 1,
             revenue: parseFloat(productPrice),
           },
         });
+
+        try {
+          const removeWishlistData = await db.removeWishlistData.create({
+            data: {
+              dailyAnalytics_id: DailyAnalystics.id,
+              product_id: productId,
+              variant_id: varientId,
+              user_id: customerId,
+            }
+          })
+        } catch (error) {
+          console.error("Error creating removeWishlistData entry:", error);
+        }
+
       }
 
       return Response.json({ message: "Product added to wishlist", });
@@ -377,13 +544,15 @@ export const action = async ({ request }) => {
         });
       }
 
+      console.log("------------------------((((())))) ");
+
       const wishlisted = await db.wishlist.update({
         where: { id: existing.id }, // use id — always safe
         data: { customerIds: UserIds.filter((id) => id !== customerId) },
       });
 
       const UpdateProduct = await db.products.update({
-        where: { id: products.id },
+        where: { id: products.id, variantId: varientId },
         data: { productlistCount: products.productlistCount - 1 },
       });
 
@@ -395,17 +564,47 @@ export const action = async ({ request }) => {
         },
       })
 
-      if (exitsDailyAnalytics) {
-        const updateDailyAnalytics = await db.dailyAnalytics.update({
-          where: {
-            id: exitsDailyAnalytics.id,
-          },
-          data: {
-            totalproduct: exitsDailyAnalytics.totalproduct - 1,
-            revenue: exitsDailyAnalytics.revenue - parseFloat(productPrice),
+      // const Dstart = new Date();
+      // Dstart.setHours(0, 0, 0, 0);
+
+      // const end = new Date();
+      // end.setHours(23, 59, 59, 999);
+
+      try {
+
+
+        if (DailyAnalyticsId) {
+          console.log("DailyAnalyticsId:--------------------", DailyAnalyticsId);
+          console.log("formattedDate:--------------------", formattedDate);
+
+          const updatedAnalytics = await db.dailyAnalytics.findFirst({
+            where: {
+              id: parseInt(DailyAnalyticsId),
+              date: formattedDate,
+            }
+          })
+         
+          if(updatedAnalytics){
+          console.log("updatedAnalytics:--------------------", updatedAnalytics);
+
+           const removedAnalytics = await db.dailyAnalytics.update({
+            where: {
+              id: parseInt(DailyAnalyticsId),
+              date: formattedDate,
+            },
+            data: {
+              totalproduct: updatedAnalytics.totalproduct - 1,
+              revenue: parseFloat((updatedAnalytics.revenue - parseFloat(productPrice)).toFixed(2)),
+            }
+          })
+
+            console.log("removedAnalytics:--------------------", removedAnalytics);
           }
-        })
+        }
+      } catch (error) {
+        console.log("Error updating daily analytics:", error);
       }
+
       return Response.json({
         message: "Product removed from wishlist",
         data: wishlisted,

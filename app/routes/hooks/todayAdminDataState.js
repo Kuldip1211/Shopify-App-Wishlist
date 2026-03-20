@@ -37,6 +37,7 @@ export function useTodayAdminData() {
                     totalRevenue: result.AllData?.totalRevenue ?? 0,
                     OutOfStock: result.AllData?.OutOfStock ?? 0,
                 },
+                DailyAnalistresult: result.DailyAnalistresult ?? [],
             });
 
         } catch (error) {
