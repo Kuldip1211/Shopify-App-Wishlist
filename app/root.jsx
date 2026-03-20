@@ -4,7 +4,7 @@ import { CustomerCountLoader } from "../app/routes/CustomerCountLoader";
 import { ActiveCustomerCountLoader } from "../app/routes/ActiveCustomerCount";
 import { CustomerListLoader } from "../app/routes/Fetchs/CustomerList";
 import { OrderConversionLoader } from "../app/routes/Fetchs/OrderConversion";
-// import { MostListProduct } from "../app/routes/Fetchs/MostListProduct";
+import { TodayAdminDataLoader } from "../app/routes/Fetchs/TodayAdminData";
 
 export default function App() {
   return (
@@ -26,6 +26,7 @@ export default function App() {
           <ActiveCustomerCountLoader /> 
           <CustomerListLoader />                                                                                             
           <OrderConversionLoader />
+          <TodayAdminDataLoader />
           <Outlet />
           <ScrollRestoration />
           <Scripts />

@@ -3,126 +3,180 @@ import {
   AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
 } from "recharts";
+import { useTodayAdminData } from "./hooks/todayAdminDataState";
 import "./styled/wishlist.css";
+import { useLoaderData } from "react-router";
+import { authenticate } from "../shopify.server";
+import prisma from "../db.server";
 
 /* ──────────────────────────────────────
-   DATA
+   HELPER: format date → "2h ago" / "3 days ago"
 ────────────────────────────────────── */
-const users = [
-  {
-    id: 1, name: "Sarah Mitchell", email: "sarah@email.com", avatar: "SM",
-    avatarColor: "#E63946", totalItems: 12, lastActive: "2m ago", status: "active", totalValue: 1240,
-    wishlist: [
-      { name: "Premium Leather Handbag",  category: "Accessories", price: 289, img: "👜", addedOn: "Mar 10", inStock: true  },
-      { name: "Wireless Headphones",       category: "Electronics", price: 349, img: "🎧", addedOn: "Mar 8",  inStock: true  },
-      { name: "Silk Evening Dress",        category: "Fashion",     price: 195, img: "👗", addedOn: "Mar 5",  inStock: false },
-      { name: "Gold Pendant Necklace",     category: "Jewelry",     price: 120, img: "📿", addedOn: "Feb 28", inStock: true  },
-    ],
-  },
-  {
-    id: 2, name: "James Kowalski", email: "james@email.com", avatar: "JK",
-    avatarColor: "#4ECDC4", totalItems: 7, lastActive: "15m ago", status: "active", totalValue: 890,
-    wishlist: [
-      { name: "Running Sneakers Pro", category: "Footwear",     price: 180, img: "👟", addedOn: "Mar 9", inStock: true  },
-      { name: "Smart Fitness Watch",  category: "Electronics",  price: 299, img: "⌚", addedOn: "Mar 6", inStock: true  },
-      { name: "Yoga Mat Premium",     category: "Sports",       price: 85,  img: "🧘", addedOn: "Mar 1", inStock: false },
-    ],
-  },
-  {
-    id: 3, name: "Priya Lakshmanan", email: "priya@email.com", avatar: "PL",
-    avatarColor: "#45B7D1", totalItems: 23, lastActive: "1h ago", status: "active", totalValue: 3140,
-    wishlist: [
-      { name: "Diamond Stud Earrings", category: "Jewelry", price: 520, img: "💎", addedOn: "Mar 10", inStock: true },
-      { name: "Silk Saree Collection", category: "Fashion", price: 340, img: "🥻", addedOn: "Mar 7",  inStock: true },
-      { name: "Perfume Set Luxury",    category: "Beauty",  price: 210, img: "🌸", addedOn: "Mar 3",  inStock: true },
-    ],
-  },
-  {
-    id: 4, name: "Omar Tahir", email: "omar@email.com", avatar: "OT",
-    avatarColor: "#F4A261", totalItems: 5, lastActive: "3h ago", status: "idle", totalValue: 760,
-    wishlist: [
-      { name: "Leather Wallet Premium", category: "Accessories", price: 95,  img: "👛", addedOn: "Mar 8",  inStock: true },
-      { name: "Cologne Oud Edition",    category: "Beauty",      price: 380, img: "✨", addedOn: "Feb 22", inStock: true },
-    ],
-  },
-  {
-    id: 5, name: "Chen Wei", email: "chen@email.com", avatar: "CW",
-    avatarColor: "#BB8FCE", totalItems: 18, lastActive: "5h ago", status: "idle", totalValue: 2890,
-    wishlist: [
-      { name: "Vintage Camera",        category: "Photography", price: 420, img: "📷", addedOn: "Mar 9",  inStock: true  },
-      { name: "Mechanical Keyboard",   category: "Electronics", price: 265, img: "⌨️", addedOn: "Mar 4",  inStock: true  },
-      { name: "Art Print Collection",  category: "Home",        price: 180, img: "🖼️", addedOn: "Feb 28", inStock: false },
-    ],
-  },
-  {
-    id: 6, name: "Amara Diallo", email: "amara@email.com", avatar: "AD",
-    avatarColor: "#2ECC71", totalItems: 9, lastActive: "1d ago", status: "offline", totalValue: 1560,
-    wishlist: [
-      { name: "Linen Blazer Classic", category: "Fashion", price: 290, img: "🧣", addedOn: "Mar 7", inStock: true },
-      { name: "Ceramic Vase Set",     category: "Home",    price: 145, img: "🏺", addedOn: "Mar 2", inStock: true },
-    ],
-  },
-  {
-    id: 7, name: "Lucas Ferreira", email: "lucas@email.com", avatar: "LF",
-    avatarColor: "#E67E22", totalItems: 14, lastActive: "30m ago", status: "active", totalValue: 2100,
-    wishlist: [
-      { name: "Espresso Machine", category: "Kitchen",  price: 550, img: "☕", addedOn: "Mar 10", inStock: true  },
-      { name: "Leather Boots",    category: "Footwear", price: 320, img: "👢", addedOn: "Mar 6",  inStock: false },
-    ],
-  },
-  {
-    id: 8, name: "Yuki Tanaka", email: "yuki@email.com", avatar: "YT",
-    avatarColor: "#E91E8C", totalItems: 31, lastActive: "10m ago", status: "active", totalValue: 4200,
-    wishlist: [
-      { name: "Anime Figurine Set", category: "Collectibles", price: 180, img: "🎎", addedOn: "Mar 11", inStock: true },
-      { name: "Gaming Headset",     category: "Electronics",  price: 220, img: "🎮", addedOn: "Mar 9",  inStock: true },
-      { name: "Sakura Perfume",     category: "Beauty",       price: 95,  img: "🌸", addedOn: "Mar 5",  inStock: true },
-    ],
-  },
-];
+function formatLastActive(date) {
+  const now = new Date();
+  const updated = new Date(date);
 
-/* ── computed ── */
-const computeOutOfStockData = () => {
-  const catMap = {};
-  users.forEach(u => {
-    u.wishlist.forEach(item => {
-      if (!catMap[item.category])
-        catMap[item.category] = { category: item.category, total: 0, outOfStock: 0, inStock: 0 };
-      catMap[item.category].total++;
-      item.inStock ? catMap[item.category].inStock++ : catMap[item.category].outOfStock++;
+  const nowDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const updDay = new Date(updated.getFullYear(), updated.getMonth(), updated.getDate());
+
+  const diffDays = Math.round((nowDay - updDay) / (1000 * 60 * 60 * 24));
+
+  if (diffDays === 0) {
+    const diffMs = now - updated;
+    const diffMins = Math.floor(diffMs / (1000 * 60));
+    const diffHrs = Math.floor(diffMs / (1000 * 60 * 60));
+    if (diffHrs >= 1) return `${diffHrs}h ago`;
+    if (diffMins >= 1) return `${diffMins}m ago`;
+    return "just now";
+  }
+  if (diffDays === 1) return "1 day ago";
+  return `${diffDays} days ago`;
+}
+
+/* ──────────────────────────────────────
+   LOADER
+────────────────────────────────────── */
+export const loader = async ({ request }) => {
+  const { admin } = await authenticate.admin(request);
+
+  // ── 1. Shopify product types (paginated) ──
+  let allProducts = [];
+  let hasNextPage = true;
+  let cursor = null;
+
+  while (hasNextPage) {
+    const paginatedQuery = `#graphql
+      query getProductTypes($cursor: String) {
+        products(first: 250, after: $cursor) {
+          edges {
+            node {
+              productType
+            }
+          }
+          pageInfo {
+            hasNextPage
+            endCursor
+          }
+        }
+      }
+    `;
+
+    const response = await admin.graphql(paginatedQuery, {
+      variables: { cursor },
     });
+
+    const { data } = await response.json();
+    const { edges, pageInfo } = data.products;
+
+    allProducts.push(...edges.map((e) => e.node.productType));
+
+    hasNextPage = pageInfo.hasNextPage;
+    cursor = pageInfo.endCursor;
+  }
+
+  // Count occurrences of each product type
+  const productTypeCounts = allProducts.reduce((acc, type) => {
+    const key = type || "Uncategorized";
+    acc[key] = (acc[key] || 0) + 1;
+    return acc;
+  }, {});
+
+  // Generate unique random hex colors (no white/black)
+  const generateColor = (usedColors) => {
+    let color;
+    do {
+      const r = Math.floor(Math.random() * 186) + 40;
+      const g = Math.floor(Math.random() * 186) + 40;
+      const b = Math.floor(Math.random() * 186) + 40;
+
+      if (r > 200 && g > 200 && b > 200) continue;
+      if (r < 50 && g < 50 && b < 50) continue;
+
+      color = `#${r.toString(16).padStart(2, "0")}${g.toString(16).padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
+    } while (usedColors.has(color));
+
+    usedColors.add(color);
+    return color;
+  };
+
+  const usedColors = new Set();
+
+  const productTypes = Object.entries(productTypeCounts).map(([type, count]) => ({
+    type,
+    count,
+    color: generateColor(usedColors),
+  }));
+
+  // ── 2. Customers from Prisma ──
+  const customers = await prisma.customer.findMany({
+    orderBy: { updatedAt: "desc" },
   });
-  return Object.values(catMap).filter(c => c.total > 0).sort((a, b) => b.total - a.total);
+
+  // ── 3. Wishlist items from Prisma ──
+  const wishlistItems = await prisma.wishlist.findMany({
+    orderBy: { createdAt: "desc" },
+  });
+
+  // ── 4. Build customerId → wishlist items map ──
+  const wishlistByCustomer = {};
+  for (const item of wishlistItems) {
+    const ids = Array.isArray(item.customerIds)
+      ? item.customerIds
+      : JSON.parse(item.customerIds ?? "[]");
+
+    for (const cId of ids) {
+      if (!wishlistByCustomer[cId]) wishlistByCustomer[cId] = [];
+      wishlistByCustomer[cId].push(item);
+    }
+  }
+
+  // ── 5. Avatar color palette (consistent, index-based) ──
+  const AVATAR_COLORS = [
+    "#E63946", "#4ECDC4", "#45B7D1", "#F4A261", "#BB8FCE",
+    "#2ECC71", "#E67E22", "#E91E8C", "#3498DB", "#1ABC9C",
+  ];
+
+  // ── 6. Shape into UI-ready users array ──
+  const users = customers.map((customer, idx) => {
+    const items = wishlistByCustomer[customer.id] ?? [];
+    const avatarColor = AVATAR_COLORS[idx % AVATAR_COLORS.length];
+
+    return {
+      id: customer.id,
+      name: `${customer.firstName} ${customer.lastName}`,
+      email: customer.email,
+      avatar: `${customer.firstName[0]}${customer.lastName[0]}`.toUpperCase(),
+      avatarColor,
+      totalItems: customer.wishlistItems,
+      totalValue: customer.wishlistprice,
+      lastActive: formatLastActive(customer.updatedAt),
+      status: "active",
+      wishlist: items.map((w) => ({
+        name: w.productName,
+        category: w.productcategory,
+        price: parseFloat(w.productPrice),
+        img: w.productImage?.startsWith("//") ? `https:${w.productImage}` : w.productImage,
+        link: w.productLink,
+        varientId: w.varientId,
+        productId: w.productId,
+        addedOn: formatLastActive(w.createdAt),
+        inStock: w.instock,
+      })),
+    };
+  });
+
+  return Response.json({ productTypes, users });
 };
-const outOfStockData = computeOutOfStockData();
 
-/* ── static chart data ── */
-const areaData = [
-  { day: "Mon", saves: 42, value: 3200 }, { day: "Tue", saves: 58, value: 4100 },
-  { day: "Wed", saves: 35, value: 2800 }, { day: "Thu", saves: 71, value: 5600 },
-  { day: "Fri", saves: 89, value: 7200 }, { day: "Sat", saves: 64, value: 5100 },
-  { day: "Sun", saves: 95, value: 8400 },
-];
-const barData = [
-  { month: "Oct", wishlists: 180 }, { month: "Nov", wishlists: 240 },
-  { month: "Dec", wishlists: 310 }, { month: "Jan", wishlists: 280 },
-  { month: "Feb", wishlists: 390 }, { month: "Mar", wishlists: 447 },
-];
-const categoryData = [
-  { name: "Fashion",     value: 32, color: "#E63946" },
-  { name: "Electronics", value: 28, color: "#4ECDC4" },
-  { name: "Jewelry",     value: 18, color: "#F4A261" },
-  { name: "Beauty",      value: 12, color: "#BB8FCE" },
-  { name: "Other",       value: 10, color: "#45B7D1" },
-];
+/* ──────────────────────────────────────
+   STATUS CONFIG
+────────────────────────────────────── */
+const statusColor = { active: "#10B981", idle: "#F59E0B", offline: "#9CA3AF" };
+const statusBg = { active: "#ECFDF5", idle: "#FFFBEB", offline: "#F9FAFB" };
+const statusBorder = { active: "rgba(16,185,129,0.3)", idle: "rgba(245,158,11,0.3)", offline: "rgba(156,163,175,0.3)" };
+const statusTextColor = { active: "#059669", idle: "#D97706", offline: "#6B7280" };
 
-/* ── status config ── */
-const statusColor    = { active: "#10B981", idle: "#F59E0B", offline: "#9CA3AF" };
-const statusBg       = { active: "#ECFDF5", idle: "#FFFBEB", offline: "#F9FAFB" };
-const statusBorder   = { active: "rgba(16,185,129,0.3)", idle: "rgba(245,158,11,0.3)", offline: "rgba(156,163,175,0.3)" };
-const statusTextColor= { active: "#059669", idle: "#D97706", offline: "#6B7280" };
-
-const OOS_BAR_COLORS = ["#E63946","#FF6B6B","#FF8C69","#E05050","#FF4757","#FF6348","#E84393","#E63946"];
+const OOS_BAR_COLORS = ["#E63946", "#FF6B6B", "#FF8C69", "#E05050", "#FF4757", "#FF6348", "#E84393", "#E63946"];
 
 /* ──────────────────────────────────────
    TOOLTIP COMPONENTS
@@ -169,67 +223,70 @@ const OosTooltip = ({ active, payload, label, oosOnly }) => {
    MAIN COMPONENT
 ────────────────────────────────────── */
 export default function WishlistDashboard() {
+
+  const { todayAdminData, fetchTodayAdminData } = useTodayAdminData();
+
+  // ── users + productTypes now come from loader (Prisma + Shopify) ──
+  const { productTypes, users } = useLoaderData();
+
   const [selectedUser, setSelectedUser] = useState(null);
-  const [modalAnim,    setModalAnim]    = useState(false);
-  const [search,       setSearch]       = useState("");
-  const [animated,     setAnimated]     = useState(false);
+  const [modalAnim, setModalAnim] = useState(false);
+  const [search, setSearch] = useState("");
+  const [animated, setAnimated] = useState(false);
 
-  useEffect(() => { setTimeout(() => setAnimated(true), 120); }, []);
+  useEffect(() => {
+    setTimeout(() => setAnimated(true), 120);
+    fetchTodayAdminData();
+  }, []);
 
-  const openModal  = (user) => { setSelectedUser(user); setTimeout(() => setModalAnim(true), 10); };
-  const closeModal = ()     => { setModalAnim(false); setTimeout(() => setSelectedUser(null), 280); };
+  const openModal = (user) => { setSelectedUser(user); setTimeout(() => setModalAnim(true), 10); };
+  const closeModal = () => { setModalAnim(false); setTimeout(() => setSelectedUser(null), 280); };
 
-  /* aggregates */
-  const totalItems    = users.reduce((a, u) => a + u.totalItems,   0);
-  const totalValue    = users.reduce((a, u) => a + u.totalValue,   0);
+  /* aggregates — computed from loader data */
+  const totalItems = users.reduce((a, u) => a + u.totalItems, 0);
+  const totalValue = users.reduce((a, u) => a + u.totalValue, 0);
   const totalProducts = users.reduce((a, u) => a + u.wishlist.length, 0);
-  const activeUsers   = users.filter(u => u.status === "active").length;
-  const totalOutOfStock = outOfStockData.reduce((a, c) => a + c.outOfStock, 0);
+  const activeUsers = users.filter(u => u.status === "active").length;
 
   const filtered = users.filter(u =>
     u.name.toLowerCase().includes(search.toLowerCase()) ||
     u.email.toLowerCase().includes(search.toLowerCase())
   );
 
-  const oosOnly = outOfStockData
-    .filter(c => c.outOfStock > 0)
-    .map(c => ({ category: c.category, outOfStock: c.outOfStock, total: c.total }));
-
   /* sidebar summary items */
   const summarySections = [
-    { label: "Total Customers", value: users.length,              icon: "👥", color: "#45B7D1", delay: "0s"    },
-    { label: "Wishlist Items",  value: totalItems,                icon: "❤️", color: "#E63946", delay: "0.06s" },
-    { label: "Unique Products", value: totalProducts,             icon: "🛍️", color: "#F4A261", delay: "0.12s" },
-    { label: "Total Value",     value: `$${totalValue.toLocaleString()}`, icon: "💰", color: "#BB8FCE", delay: "0.18s" },
-    { label: "Out of Stock",    value: totalOutOfStock,            icon: "🚫", color: "#E63946", delay: "0.24s" },
+    { label: "Total Customers", value: todayAdminData.WholeData?.totalCustomers, icon: "👥", color: "#45B7D1", delay: "0s" },
+    { label: "Wishlist Items", value: todayAdminData.WholeData?.totalCount, icon: "❤️", color: "#E63946", delay: "0.06s" },
+    { label: "Unique Products", value: totalProducts, icon: "🛍️", color: "#F4A261", delay: "0.12s" },
+    { label: "Total Value", value: "$" + todayAdminData.WholeData?.totalRevenue, icon: "💰", color: "#BB8FCE", delay: "0.18s" },
+    { label: "Out of Stock", value: todayAdminData.WholeData?.OutOfStock, icon: "🚫", color: "#E63946", delay: "0.24s" },
   ];
 
   /* status rows */
   const statusRows = [
-    { label: "Active",  count: users.filter(u => u.status === "active").length,  color: "#10B981", bg: "#ECFDF5", border: "#BBF7D0" },
-    { label: "Idle",    count: users.filter(u => u.status === "idle").length,    color: "#F59E0B", bg: "#FFFBEB", border: "#FDE68A" },
+    { label: "Active", count: users.filter(u => u.status === "active").length, color: "#10B981", bg: "#ECFDF5", border: "#BBF7D0" },
+    { label: "Idle", count: users.filter(u => u.status === "idle").length, color: "#F59E0B", bg: "#FFFBEB", border: "#FDE68A" },
     { label: "Offline", count: users.filter(u => u.status === "offline").length, color: "#9CA3AF", bg: "#F9FAFB", border: "#E5E7EB" },
   ];
 
   /* kpi cards */
   const kpiCards = [
-    { label: "Total Wishlists", value: users.length,                          sub: "↑ 12% this week",  icon: "❤️", color: "#E63946", delay: "0s"    },
-    { label: "Items Saved",     value: totalItems,                             sub: "↑ 8% this week",   icon: "🛍️", color: "#4ECDC4", delay: "0.08s" },
-    { label: "Total Value",     value: `$${totalValue.toLocaleString()}`,      sub: "↑ 24% this month", icon: "💰", color: "#F4A261", delay: "0.16s" },
-    { label: "Avg per User",    value: Math.round(totalItems / users.length),  sub: "items per wishlist",icon: "📊", color: "#BB8FCE", delay: "0.24s" },
+    { label: "Today Total Wishlists", value: todayAdminData.todayTotalWishlist, sub: "↑ " + todayAdminData.todayincrementWishlist + "% today", icon: "❤️", color: "#E63946", delay: "0s" },
+    { label: "Items Saved", value: totalItems, sub: "↑ 8% this week", icon: "🛍️", color: "#4ECDC4", delay: "0.08s" },
+    { label: "Today Total Value", value: "$" + todayAdminData.todayTotalValue, sub: "↑ " + todayAdminData.todayTotalValueIncrement + "% today", icon: "💰", color: "#F4A261", delay: "0.16s" },
+    { label: "Avg per User", value: todayAdminData.itemPerWishlist, sub: "items per wishlist", icon: "📊", color: "#BB8FCE", delay: "0.24s" },
   ];
 
   /* modal pills */
   const modalPills = selectedUser ? [
-    { icon: "❤️", label: `${selectedUser.totalItems} items`           },
-    { icon: "💰", label: `$${selectedUser.totalValue.toLocaleString()}` },
-    { icon: "🕐", label: selectedUser.lastActive                       },
+    { icon: "❤️", label: `${selectedUser.totalItems} items` },
+    { icon: "💰", label: `$${Number(selectedUser.totalValue).toLocaleString()}` },
+    { icon: "🕐", label: selectedUser.lastActive },
   ] : [];
 
   /* ── RENDER ── */
   return (
     <div id="app-root">
-
       {/* ── HEADER ── */}
       <header id="header">
         <div id="header-brand">
@@ -278,17 +335,17 @@ export default function WishlistDashboard() {
           {/* By Category */}
           <section>
             <div className="sidebar-section-label sidebar-section-label--mb14">By Category</div>
-            {categoryData.map((cat, i) => (
+            {productTypes.map((cat, i) => (
               <div key={i} className="cat-bar-row">
                 <div className="cat-bar-header">
-                  <span className="cat-bar-name">{cat.name}</span>
-                  <span className="cat-bar-pct" style={{ color: cat.color }}>{cat.value}%</span>
+                  <span className="cat-bar-name">{cat.type}</span>
+                  <span className="cat-bar-pct" style={{ color: cat.color }}>{cat.count}%</span>
                 </div>
                 <div className="cat-bar-track">
                   <div
                     className="cat-bar-fill"
                     style={{
-                      width: animated ? `${cat.value}%` : "0%",
+                      width: animated ? `${cat.value}%` : "100%",
                       background: `linear-gradient(90deg,${cat.color}77,${cat.color})`,
                       transitionDelay: `${i * 0.1}s`,
                     }}
@@ -363,23 +420,23 @@ export default function WishlistDashboard() {
                 </div>
               </div>
               <ResponsiveContainer width="100%" height={175}>
-                <AreaChart data={areaData}>
+                <AreaChart data={todayAdminData.DailyAnalistresult}>
                   <defs>
                     <linearGradient id="gSaves" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%"  stopColor="#E63946" stopOpacity={0.18} />
+                      <stop offset="5%" stopColor="#E63946" stopOpacity={0.18} />
                       <stop offset="95%" stopColor="#E63946" stopOpacity={0} />
                     </linearGradient>
                     <linearGradient id="gValue" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%"  stopColor="#4ECDC4" stopOpacity={0.18} />
+                      <stop offset="5%" stopColor="#4ECDC4" stopOpacity={0.18} />
                       <stop offset="95%" stopColor="#4ECDC4" stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
-                  <XAxis dataKey="day"    tick={{ fill: "#6B7280", fontSize: 11, fontWeight: 500 }} axisLine={false} tickLine={false} />
-                  <YAxis                  tick={{ fill: "#6B7280", fontSize: 11 }} axisLine={false} tickLine={false} width={30} />
+                  <XAxis dataKey="day" tick={{ fill: "#6B7280", fontSize: 11, fontWeight: 500 }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fill: "#6B7280", fontSize: 11 }} axisLine={false} tickLine={false} width={30} />
                   <Tooltip content={<CustomTooltip />} />
-                  <Area type="monotone" dataKey="saves" name="Saves"    stroke="#E63946" strokeWidth={2.5} fill="url(#gSaves)" dot={false} />
-                  <Area type="monotone" dataKey="value" name="Value $"  stroke="#4ECDC4" strokeWidth={2.5} fill="url(#gValue)" dot={false} />
+                  <Area type="monotone" dataKey="totalproduct" name="Saves" stroke="#E63946" strokeWidth={2.5} fill="url(#gSaves)" dot={false} />
+                  <Area type="monotone" dataKey="revenue" name="Value $" stroke="#4ECDC4" strokeWidth={2.5} fill="url(#gValue)" dot={false} />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
@@ -390,17 +447,17 @@ export default function WishlistDashboard() {
               <div className="chart-subtitle" style={{ marginBottom: 14 }}>Product distribution</div>
               <ResponsiveContainer width="100%" height={145}>
                 <PieChart>
-                  <Pie data={categoryData} cx="50%" cy="50%" innerRadius={44} outerRadius={66} paddingAngle={3} dataKey="value">
-                    {categoryData.map((c, i) => <Cell key={i} fill={c.color} />)}
+                  <Pie data={productTypes} cx="50%" cy="50%" innerRadius={44} outerRadius={66} paddingAngle={3} dataKey="count">
+                    {productTypes.map((c, i) => <Cell key={c.type} fill={c.color} />)}
                   </Pie>
-                  <Tooltip content={<CustomTooltip />} />
+                  <Tooltip formatter={(value, name, props) => [value, props.payload.type]} />
                 </PieChart>
               </ResponsiveContainer>
               <div className="pie-legend">
-                {categoryData.map((c, i) => (
+                {productTypes.map((c, i) => (
                   <div key={i} className="pie-legend-item">
                     <div className="pie-legend-dot" style={{ background: c.color }} />
-                    <span className="pie-legend-name">{c.name}</span>
+                    <span className="pie-legend-name">{c.type}</span>
                   </div>
                 ))}
               </div>
@@ -415,40 +472,49 @@ export default function WishlistDashboard() {
                 <div className="chart-subtitle">OOS count vs total wishlist items per category</div>
               </div>
               <div className="oos-badges">
-                <div className="oos-badge oos-badge--red">🚫 {totalOutOfStock} OOS</div>
-                <div className="oos-badge oos-badge--gray">🛍️ {totalProducts} total</div>
+                <div className="oos-badge oos-badge--red">🚫 {todayAdminData?.WholeData?.OutOfStock ?? 0} OOS in Wishlist</div>
+                <div className="oos-badge oos-badge--gray">🛍️ {todayAdminData?.totalproducts ?? 0} total</div>
               </div>
             </div>
 
             <ResponsiveContainer width="100%" height={230}>
-              <BarChart data={oosOnly} barSize={42} margin={{ top: 24, right: 8, left: 0, bottom: 0 }}>
+              <BarChart data={todayAdminData.oosOnly2} barSize={42} margin={{ top: 24, right: 8, left: 0, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" vertical={false} />
                 <XAxis dataKey="category" tick={{ fill: "#6B7280", fontSize: 12, fontWeight: 600 }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fill: "#6B7280", fontSize: 11 }} axisLine={false} tickLine={false} width={24} allowDecimals={false} />
-                <Tooltip content={(props) => <OosTooltip {...props} oosOnly={oosOnly} />} />
+                <Tooltip content={(props) => <OosTooltip {...props} oosOnly={todayAdminData.oosOnly2} />} />
                 <Bar
                   dataKey="outOfStock"
                   name="Out of Stock"
                   radius={[8, 8, 0, 0]}
                   label={({ x, y, width, value, index }) => {
-                    const d = oosOnly[index];
+                    const d = todayAdminData.oosOnly2[index];
                     return (
                       <g>
-                        <text x={x + width / 2} y={y - 6}  textAnchor="middle" fill="#E63946" fontWeight={800} fontSize={13}>🚫 {value}</text>
+                        <text x={x + width / 2} y={y - 6} textAnchor="middle" fill="#E63946" fontWeight={800} fontSize={13}>🚫 {value}</text>
                         <text x={x + width / 2} y={y + (230 - 24 - 30) + 38} textAnchor="middle" fill="#6B7280" fontWeight={700} fontSize={11}>{d?.total} total</text>
                       </g>
                     );
                   }}
                 >
-                  {oosOnly.map((_, i) => <Cell key={i} fill={OOS_BAR_COLORS[i % OOS_BAR_COLORS.length]} fillOpacity={0.88} />)}
+                  {todayAdminData?.oosOnly2?.map((_, i) => (
+                    <Cell
+                      key={i}
+                      fill={OOS_BAR_COLORS[i % OOS_BAR_COLORS.length]}
+                      fillOpacity={0.88}
+                    />
+                  ))}
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
 
             <div className="oos-pills-row">
-              {oosOnly.map((c, i) => (
+              {todayAdminData?.oosOnly2?.map((c, i) => (
                 <div key={i} className="oos-pill">
-                  <div className="oos-pill__dot" style={{ background: OOS_BAR_COLORS[i % OOS_BAR_COLORS.length] }} />
+                  <div
+                    className="oos-pill__dot"
+                    style={{ background: OOS_BAR_COLORS[i % OOS_BAR_COLORS.length] }}
+                  />
                   <span className="oos-pill__cat">{c.category}</span>
                   <span className="oos-pill__oos">{c.outOfStock} OOS</span>
                   <span className="oos-pill__sep">/</span>
@@ -465,19 +531,19 @@ export default function WishlistDashboard() {
                 <div className="chart-title">Monthly Wishlist Growth</div>
                 <div className="chart-subtitle">Total wishlists created per month</div>
               </div>
-              <div className="monthly-badge">+147 this month ↑</div>
+              <div className="monthly-badge">+{todayAdminData?.currentMonthWishlists} ↑</div>
             </div>
             <ResponsiveContainer width="100%" height={140}>
-              <BarChart data={barData} barSize={34}>
+              <BarChart data={todayAdminData?.barData} barSize={34}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" vertical={false} />
                 <XAxis dataKey="month" tick={{ fill: "#6B7280", fontSize: 11, fontWeight: 500 }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fill: "#6B7280", fontSize: 11 }} axisLine={false} tickLine={false} width={30} />
                 <Tooltip content={<CustomTooltip />} />
                 <Bar dataKey="wishlists" name="Wishlists" radius={[7, 7, 0, 0]}>
-                  {barData.map((_, i) => (
+                  {todayAdminData?.barData?.map((_, i) => (
                     <Cell
                       key={i}
-                      fill={i === barData.length - 1
+                      fill={i === todayAdminData?.barData?.length - 1
                         ? "#E63946"
                         : `#E63946${Math.round(30 + i * 28).toString(16).padStart(2, "0")}`}
                     />
@@ -545,7 +611,7 @@ export default function WishlistDashboard() {
 
                   <div className="user-row__counts">
                     <div className="user-row__items">{user.totalItems} items</div>
-                    <div className="user-row__value">${user.totalValue.toLocaleString()}</div>
+                    <div className="user-row__value">${Number(user.totalValue).toLocaleString()}</div>
                   </div>
 
                   <div className="user-row__time">{user.lastActive}</div>
@@ -610,7 +676,18 @@ export default function WishlistDashboard() {
 
               {selectedUser.wishlist.map((item, i) => (
                 <div key={i} className="product-row">
-                  <div className="product-row__img">{item.img}</div>
+                  <div className="product-row__img">
+                    {item.img && item.img.startsWith("http") ? (
+                      <img
+                        src={item.img}
+                        alt={item.name}
+                        style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "inherit" }}
+                        onError={e => { e.target.style.display = "none"; e.target.parentNode.innerText = "🛍️"; }}
+                      />
+                    ) : (
+                      item.img || "🛍️"
+                    )}
+                  </div>
                   <div className="product-row__info">
                     <div className="product-row__name">{item.name}</div>
                     <div className="product-row__meta">

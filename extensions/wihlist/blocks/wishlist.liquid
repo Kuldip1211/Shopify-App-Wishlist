@@ -11,17 +11,28 @@
 {% endcomment %}
 
 {% assign product_id = product.id | default: 0 %}
-{% assign product_title = product.title | default: '' | escape %}
-{% assign product_url = product.url | default: '#' %}
-{% assign product_image = product.featured_image | img_url: '400x' | default: '' %}
 {% assign product_price = product.price | money_without_currency %}
-{% assign product_category = product.category | default: '' %}
+{% assign product_url = product.url | default: '#' %}
+{% assign product_variant_id = 0 %}
 {% assign product_in_stock = product.available %}
+{% assign product_image = product.featured_image | img_url: '400x' | default: '' %}
+{% if product.variants.size > 1 %}
+  {% assign product_variant_id = product.selected_or_first_available_variant.id %}
+  {% assign product_price = product.selected_or_first_available_variant.price | money_without_currency %}
+  {% assign product_url = product.selected_or_first_available_variant.url | default: '#' %}
+  {% assign product_in_stock = product.selected_or_first_available_variant.available %}
+  {% assign product_image = product.selected_or_first_available_variant.featured_image | img_url: '400x' | default: product_image %}
+{% endif %}
+
+{% assign product_image = product.selected_or_first_available_variant.featured_image | img_url: '400x' | default: product_image %}
+{% assign product_title = product.title | default: '' | escape %}
+{% assign product_category = product.type | default: 'not get' %}
 {%  assign customerID = customer.id | default: 0 %}
 
 <button
   class="wl-btn"
   data-wishlist-btn
+  data-product-varient-id="{{ product_variant_id }}"
   data-product-id="{{ product_id }}"
   data-product-title="{{ product_title }}"
   data-product-url="{{ product_url }}"
@@ -76,17 +87,17 @@ document.addEventListener("DOMContentLoaded", function() {
     
     const product_id = Wishlistbutton.getAttribute("data-product-id")
 
-    const variant_id = product_id;
+    const variant_id = Wishlistbutton.getAttribute("data-product-varient-id");
     
     const Customer_Id = Wishlistbutton.getAttribute("data-customer-id")
 
     const Data = {
       productid : product_id,
-      variant_id : product_id,
+      variant_id : variant_id,
       customer_id : Customer_Id
     }
 
-    const response = await fetch("/apps/wishlist/api/wishlist?id=" + product_id + "&task=check&customerId=" + Customer_Id, {
+    const response = await fetch("/apps/wishlist/api/wishlist?varientId="+ variant_id +"&id=" + product_id + "&task=check&customerId=" + Customer_Id, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -94,10 +105,11 @@ document.addEventListener("DOMContentLoaded", function() {
         "bypass-tunnel-reminder": "1", // ✅ extra safety
       },
     });
-
+const productVariants = {{ product.variants | json }};
     const data = await response.json()
                 if(data.message === true){
                   Wishlistbutton.setAttribute("aria-pressed", "true");
+                  Wishlistbutton.setAttribute("data-daily-analytics-id", data.DailyAnalyticsId);
                 }
     }
 
@@ -143,6 +155,114 @@ document.addEventListener("DOMContentLoaded", function() {
 
 postUserData();
 </script>
+
+<script>
+const Wishlistbutton = document.getElementById("Wishlistbtn");
+
+const product_id = Wishlistbutton.getAttribute("data-product-id");
+const link = Wishlistbutton.getAttribute("data-product-url");
+const Customer_Id = Wishlistbutton.getAttribute("data-customer-id");
+
+const productVariants = {{ product.variants | json }};
+
+// 1. Detect browser back/forward navigation
+window.addEventListener("popstate", () => {
+  alert("URL changed to: " + location.href);
+});
+
+// 2. Intercept pushState (programmatic navigation)
+const originalPushState = history.pushState.bind(history);
+
+history.pushState = function (...args) {
+  originalPushState(...args);
+  alert("URL changed to: " + location.href);
+};
+
+// 3. Intercept replaceState (main logic here)
+const originalReplaceState = history.replaceState.bind(history);
+
+history.replaceState = async function (...args) {
+  originalReplaceState(...args);
+
+  Wishlistbutton.removeAttribute("data-product-image");
+
+  const params = new URLSearchParams(window.location.search);
+  const variantId = params.get("variant");
+ 
+  const variant = productVariants.find(v => v.id == variantId);
+  
+  // Set attributes
+  Wishlistbutton.setAttribute("data-product-varient-id", variantId);
+  
+  /**
+   *! Set feactuen Image
+   **/
+
+
+   const feacturedImage = variant.featured_image
+
+   const IMAGES = JSON.stringify(feacturedImage.src);
+
+   alert(IMAGES)
+
+   let url = IMAGES
+  .replace(/&quot;/g, "")
+  .replace(/^"+|"+$/g, ""); // remove quotes from start/end
+
+   Wishlistbutton.setAttribute("data-product-image",url);
+
+  if (variant) {
+    Wishlistbutton.setAttribute(
+      "data-product-price",
+      (variant.price / 100).toFixed(2)
+    );
+
+    Wishlistbutton.setAttribute(
+      "data-product-in-stock",
+      variant.available
+    );
+
+    const baseUrl = link.split("=")[0];
+    Wishlistbutton.setAttribute(
+      "data-product-url",
+      baseUrl + variantId
+    );
+  }
+
+  /** 
+   * TODO API Fetch when Change A Variant 
+   * **/
+  const response = await fetch(
+    `/apps/wishlist/api/wishlist?varientId=${variantId}&id=${product_id}&task=check&customerId=${Customer_Id}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "ngrok-skip-browser-warning": "1",
+        "bypass-tunnel-reminder": "1",
+      },
+    }
+  );
+
+  const data = await response.json();
+
+  if (data.message === true) {
+    Wishlistbutton.setAttribute("aria-pressed", "true");
+    Wishlistbutton.setAttribute("data-daily-analytics-id", data.DailyAnalyticsId);
+  } else {
+    Wishlistbutton.setAttribute("aria-pressed", "false");
+    Wishlistbutton.removeAttribute("data-daily-analytics-id");
+  }
+};
+
+// 4. Detect hash changes
+window.addEventListener("hashchange", () => {
+  const params = new URLSearchParams(window.location.search);
+  alert(params.toString());
+});
+</script>
+
+
 
 {{ 'wishlist.css' | asset_url | stylesheet_tag }}
 <script src="{{ 'wishlist.js' | asset_url }}" defer="defer"></script>

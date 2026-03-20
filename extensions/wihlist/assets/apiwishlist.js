@@ -11,8 +11,9 @@ btn.addEventListener("click", async function () {
   const productImage = btn.getAttribute("data-product-image");
   const productPrice = btn.getAttribute("data-product-price");    
   const productId = btn.getAttribute("data-product-id");
+  const productVarientId = btn.getAttribute("data-product-varient-id");
   const datawishlisted = btn.getAttribute("aria-pressed");
-
+  const DailyAnalyticsId = btn.getAttribute("data-daily-analytics-id");
   let stock = false;
 
   if(inStock === "false"){
@@ -33,7 +34,7 @@ btn.addEventListener("click", async function () {
         body: JSON.stringify({
           customerId: customerId,                                           
           productId: productId,
-          varientId: productId, 
+          varientId: productVarientId,
           productName: productTitle,
           productLink: productUrl,
           productImage: productImage,
@@ -48,6 +49,7 @@ btn.addEventListener("click", async function () {
       }
 
       const data = await response.json();
+      btn.setAttribute("data-daily-analytics-id", data?.id ?? "0"); // Set the DailyAnalyticsId attribute with the returned ID
 
   } catch (error) {
       alert("Error: " + error.message);
@@ -64,12 +66,13 @@ btn.addEventListener("click", async function () {
           body: JSON.stringify({
               customerId: customerId,                                           
               productId: productId,
-              varientId: productId, 
+              varientId: productVarientId, 
               productName: productTitle,
               productLink: productUrl,
               productImage: productImage,
               productPrice: productPrice,
               productcategory: productCategory,
+              DailyAnalyticsId : DailyAnalyticsId,
               instock: stock
             })
         });
@@ -79,6 +82,7 @@ btn.addEventListener("click", async function () {
           }
 
       const data = await response.json();
+      btn.removeAttribute("data-daily-analytics-id"); // Remove the DailyAnalyticsId attribute after deletion
 
   } catch (error) {
           alert("Error: " + error.message);
