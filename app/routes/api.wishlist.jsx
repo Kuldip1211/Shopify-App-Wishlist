@@ -125,12 +125,12 @@ export const loader = async ({ request }) => {
     // fetch records directly using createdAt
     const records = await db.dailyAnalytics.findMany({
       where: {
-        date : formattedDate2
+        date: formattedDate2
       },
     });
 
     const TodatPRoduct = records[0]?.totalproduct ?? 0;
-    
+
     console.log("------------------------------------------------------------------------------------------------------------------");
     console.log("------------------------------------------------------------------------------------------------------------------");
     console.log("Daily Analytics records for today:", records);
@@ -144,12 +144,31 @@ export const loader = async ({ request }) => {
     console.log("------------------------------------------------------------------------------------------------------------------");
     console.log("------------------------------------------------------------------------------------------------------------------");
 
+
+    // ✅ Calculate date range: 6 days ago → today
+    const today2 = new Date();
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(today.getDate() - 6);
+
+      const records2 = await db.dailyAnalytics.findMany({
+        where: {
+          createdAt: {
+            gte: new Date(sevenDaysAgo.setHours(0, 0, 0, 0)),   // ✅ actual Date object
+            lte: new Date(today.setHours(23, 59, 59, 999)),      // ✅ actual Date object
+          },
+        },
+      });
+
+    console.log("------------------------------------------------------------------------------------------------------------------");
+    console.log("Daily Analytics records for last 7 days:", records2);  
+    console.log("------------------------------------------------------------------------------------------------------------------");
+
     // prepare last 7 days map
     const daysMap = {};
 
     for (let i = 6; i >= 0; i--) {
       const d = new Date();
-      d.setDate(today.getDate() - i);
+      d.setDate(today2.getDate() - i);
 
       const key = d.toISOString().split("T")[0]; // YYYY-MM-DD
       const dayName = d.toLocaleDateString("en-US", { weekday: "short" });
@@ -162,7 +181,7 @@ export const loader = async ({ request }) => {
     }
 
     // fill actual data
-    records.forEach(r => {
+    records2.forEach(r => {
       const key = new Date(r.createdAt).toISOString().split("T")[0];
 
       if (daysMap[key]) {
@@ -583,20 +602,20 @@ export const action = async ({ request }) => {
               date: formattedDate,
             }
           })
-         
-          if(updatedAnalytics){
-          console.log("updatedAnalytics:--------------------", updatedAnalytics);
 
-           const removedAnalytics = await db.dailyAnalytics.update({
-            where: {
-              id: parseInt(DailyAnalyticsId),
-              date: formattedDate,
-            },
-            data: {
-              totalproduct: updatedAnalytics.totalproduct - 1,
-              revenue: parseFloat((updatedAnalytics.revenue - parseFloat(productPrice)).toFixed(2)),
-            }
-          })
+          if (updatedAnalytics) {
+            console.log("updatedAnalytics:--------------------", updatedAnalytics);
+
+            const removedAnalytics = await db.dailyAnalytics.update({
+              where: {
+                id: parseInt(DailyAnalyticsId),
+                date: formattedDate,
+              },
+              data: {
+                totalproduct: updatedAnalytics.totalproduct - 1,
+                revenue: parseFloat((updatedAnalytics.revenue - parseFloat(productPrice)).toFixed(2)),
+              }
+            })
 
             console.log("removedAnalytics:--------------------", removedAnalytics);
           }
