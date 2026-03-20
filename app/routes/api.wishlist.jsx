@@ -147,20 +147,20 @@ export const loader = async ({ request }) => {
 
     // ✅ Calculate date range: 6 days ago → today
     const today2 = new Date();
-      const sevenDaysAgo = new Date();
-      sevenDaysAgo.setDate(today.getDate() - 6);
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(today.getDate() - 6);
 
-      const records2 = await db.dailyAnalytics.findMany({
-        where: {
-          createdAt: {
-            gte: new Date(sevenDaysAgo.setHours(0, 0, 0, 0)),   // ✅ actual Date object
-            lte: new Date(today.setHours(23, 59, 59, 999)),      // ✅ actual Date object
-          },
+    const records2 = await db.dailyAnalytics.findMany({
+      where: {
+        createdAt: {
+          gte: new Date(sevenDaysAgo.setHours(0, 0, 0, 0)),   // ✅ actual Date object
+          lte: new Date(today.setHours(23, 59, 59, 999)),      // ✅ actual Date object
         },
-      });
+      },
+    });
 
     console.log("------------------------------------------------------------------------------------------------------------------");
-    console.log("Daily Analytics records for last 7 days:", records2);  
+    console.log("Daily Analytics records for last 7 days:", records2);
     console.log("------------------------------------------------------------------------------------------------------------------");
 
     // prepare last 7 days map
@@ -197,6 +197,55 @@ export const loader = async ({ request }) => {
     console.log("------------------------------------------------------------------------------------------------------------------")
     console.log("📊 Final Weekly Data:", DailyAnalistresult);
 
+
+    console.log("------------------------------------------------------------------------------------------------------------------");
+    console.log("                                                 OOS Products Count                                         ");
+    console.log("------------------------------------------------------------------------------------------------------------------")
+
+    let oosOnly2 = [];
+
+    try {
+      const products = await db.products.findMany({
+        where: {
+          productlistCount: {
+            not: 0   // ✅ only fetch where != 0
+          }
+        },
+        select: {
+          productcategory: true,
+          instock: true,
+          productlistCount: true
+        }
+      });
+
+      const categoryMap = {};
+
+      products.forEach((product) => {
+        const category = product.productcategory.toLowerCase();
+
+        if (!categoryMap[category]) {
+          categoryMap[category] = {
+            category,
+            outOfStock: 0,
+            total: 0
+          };
+        }
+
+        categoryMap[category].total += 1;
+
+        if (!product.instock) {
+          categoryMap[category].outOfStock += 1;
+        }
+      });
+
+      oosOnly2 = Object.values(categoryMap);
+
+    } catch (error) {
+      console.error(error);
+    }
+
+
+    console.log(oosOnly2);
 
     const todayResult = await db.products.aggregate({
       _sum: {
@@ -264,14 +313,17 @@ export const loader = async ({ request }) => {
     let rst = (todaytotalCount * 100) / totalCount
     const todayincrementWishlist = Math.round(rst * 100) / 100;
     // total revenue
-    const totalRevenue = revenueResult._sum.wishlistprice ?? 0;
+    const totalRevenue = (revenueResult._sum.wishlistprice ?? 0).toFixed(2);
     //today revenue
     const todayRevenue = (todayRevenueResult?.revenue ?? 0).toFixed(2);
     // how much today growth in percentage of revenue
     let revenueRst = (todayRevenue * 100) / totalRevenue
+
     const todayRevenuePercentage = Math.round(revenueRst * 100) / 100;
     //wiahliat per USER
     let AvgperUSer = totalCount / totalCustomers || 0;
+
+
 
 
 
@@ -290,7 +342,8 @@ export const loader = async ({ request }) => {
       todayRevenuePercentage,
       AvgperUSer,
       AllData,
-      DailyAnalistresult
+      DailyAnalistresult,
+      oosOnly2
     });
   }
 

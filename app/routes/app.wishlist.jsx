@@ -91,19 +91,19 @@ const users = [
     id: 1, name: "Sarah Mitchell", email: "sarah@email.com", avatar: "SM",
     avatarColor: "#E63946", totalItems: 12, lastActive: "2m ago", status: "active", totalValue: 1240,
     wishlist: [
-      { name: "Premium Leather Handbag",  category: "Accessories", price: 289, img: "👜", addedOn: "Mar 10", inStock: true  },
-      { name: "Wireless Headphones",       category: "Electronics", price: 349, img: "🎧", addedOn: "Mar 8",  inStock: true  },
-      { name: "Silk Evening Dress",        category: "Fashion",     price: 195, img: "👗", addedOn: "Mar 5",  inStock: false },
-      { name: "Gold Pendant Necklace",     category: "Jewelry",     price: 120, img: "📿", addedOn: "Feb 28", inStock: true  },
+      { name: "Premium Leather Handbag", category: "Accessories", price: 289, img: "👜", addedOn: "Mar 10", inStock: true },
+      { name: "Wireless Headphones", category: "Electronics", price: 349, img: "🎧", addedOn: "Mar 8", inStock: true },
+      { name: "Silk Evening Dress", category: "Fashion", price: 195, img: "👗", addedOn: "Mar 5", inStock: false },
+      { name: "Gold Pendant Necklace", category: "Jewelry", price: 120, img: "📿", addedOn: "Feb 28", inStock: true },
     ],
   },
   {
     id: 2, name: "James Kowalski", email: "james@email.com", avatar: "JK",
     avatarColor: "#4ECDC4", totalItems: 7, lastActive: "15m ago", status: "active", totalValue: 890,
     wishlist: [
-      { name: "Running Sneakers Pro", category: "Footwear",     price: 180, img: "👟", addedOn: "Mar 9", inStock: true  },
-      { name: "Smart Fitness Watch",  category: "Electronics",  price: 299, img: "⌚", addedOn: "Mar 6", inStock: true  },
-      { name: "Yoga Mat Premium",     category: "Sports",       price: 85,  img: "🧘", addedOn: "Mar 1", inStock: false },
+      { name: "Running Sneakers Pro", category: "Footwear", price: 180, img: "👟", addedOn: "Mar 9", inStock: true },
+      { name: "Smart Fitness Watch", category: "Electronics", price: 299, img: "⌚", addedOn: "Mar 6", inStock: true },
+      { name: "Yoga Mat Premium", category: "Sports", price: 85, img: "🧘", addedOn: "Mar 1", inStock: false },
     ],
   },
   {
@@ -111,25 +111,25 @@ const users = [
     avatarColor: "#45B7D1", totalItems: 23, lastActive: "1h ago", status: "active", totalValue: 3140,
     wishlist: [
       { name: "Diamond Stud Earrings", category: "Jewelry", price: 520, img: "💎", addedOn: "Mar 10", inStock: true },
-      { name: "Silk Saree Collection", category: "Fashion", price: 340, img: "🥻", addedOn: "Mar 7",  inStock: true },
-      { name: "Perfume Set Luxury",    category: "Beauty",  price: 210, img: "🌸", addedOn: "Mar 3",  inStock: true },
+      { name: "Silk Saree Collection", category: "Fashion", price: 340, img: "🥻", addedOn: "Mar 7", inStock: true },
+      { name: "Perfume Set Luxury", category: "Beauty", price: 210, img: "🌸", addedOn: "Mar 3", inStock: true },
     ],
   },
   {
     id: 4, name: "Omar Tahir", email: "omar@email.com", avatar: "OT",
     avatarColor: "#F4A261", totalItems: 5, lastActive: "3h ago", status: "idle", totalValue: 760,
     wishlist: [
-      { name: "Leather Wallet Premium", category: "Accessories", price: 95,  img: "👛", addedOn: "Mar 8",  inStock: true },
-      { name: "Cologne Oud Edition",    category: "Beauty",      price: 380, img: "✨", addedOn: "Feb 22", inStock: true },
+      { name: "Leather Wallet Premium", category: "Accessories", price: 95, img: "👛", addedOn: "Mar 8", inStock: true },
+      { name: "Cologne Oud Edition", category: "Beauty", price: 380, img: "✨", addedOn: "Feb 22", inStock: true },
     ],
   },
   {
     id: 5, name: "Chen Wei", email: "chen@email.com", avatar: "CW",
     avatarColor: "#BB8FCE", totalItems: 18, lastActive: "5h ago", status: "idle", totalValue: 2890,
     wishlist: [
-      { name: "Vintage Camera",        category: "Photography", price: 420, img: "📷", addedOn: "Mar 9",  inStock: true  },
-      { name: "Mechanical Keyboard",   category: "Electronics", price: 265, img: "⌨️", addedOn: "Mar 4",  inStock: true  },
-      { name: "Art Print Collection",  category: "Home",        price: 180, img: "🖼️", addedOn: "Feb 28", inStock: false },
+      { name: "Vintage Camera", category: "Photography", price: 420, img: "📷", addedOn: "Mar 9", inStock: true },
+      { name: "Mechanical Keyboard", category: "Electronics", price: 265, img: "⌨️", addedOn: "Mar 4", inStock: true },
+      { name: "Art Print Collection", category: "Home", price: 180, img: "🖼️", addedOn: "Feb 28", inStock: false },
     ],
   },
   {
@@ -137,15 +137,15 @@ const users = [
     avatarColor: "#2ECC71", totalItems: 9, lastActive: "1d ago", status: "offline", totalValue: 1560,
     wishlist: [
       { name: "Linen Blazer Classic", category: "Fashion", price: 290, img: "🧣", addedOn: "Mar 7", inStock: true },
-      { name: "Ceramic Vase Set",     category: "Home",    price: 145, img: "🏺", addedOn: "Mar 2", inStock: true },
+      { name: "Ceramic Vase Set", category: "Home", price: 145, img: "🏺", addedOn: "Mar 2", inStock: true },
     ],
   },
   {
     id: 7, name: "Lucas Ferreira", email: "lucas@email.com", avatar: "LF",
     avatarColor: "#E67E22", totalItems: 14, lastActive: "30m ago", status: "active", totalValue: 2100,
     wishlist: [
-      { name: "Espresso Machine", category: "Kitchen",  price: 550, img: "☕", addedOn: "Mar 10", inStock: true  },
-      { name: "Leather Boots",    category: "Footwear", price: 320, img: "👢", addedOn: "Mar 6",  inStock: false },
+      { name: "Espresso Machine", category: "Kitchen", price: 550, img: "☕", addedOn: "Mar 10", inStock: true },
+      { name: "Leather Boots", category: "Footwear", price: 320, img: "👢", addedOn: "Mar 6", inStock: false },
     ],
   },
   {
@@ -153,8 +153,8 @@ const users = [
     avatarColor: "#E91E8C", totalItems: 31, lastActive: "10m ago", status: "active", totalValue: 4200,
     wishlist: [
       { name: "Anime Figurine Set", category: "Collectibles", price: 180, img: "🎎", addedOn: "Mar 11", inStock: true },
-      { name: "Gaming Headset",     category: "Electronics",  price: 220, img: "🎮", addedOn: "Mar 9",  inStock: true },
-      { name: "Sakura Perfume",     category: "Beauty",       price: 95,  img: "🌸", addedOn: "Mar 5",  inStock: true },
+      { name: "Gaming Headset", category: "Electronics", price: 220, img: "🎮", addedOn: "Mar 9", inStock: true },
+      { name: "Sakura Perfume", category: "Beauty", price: 95, img: "🌸", addedOn: "Mar 5", inStock: true },
     ],
   },
 ];
@@ -187,20 +187,20 @@ const barData = [
   { month: "Feb", wishlists: 390 }, { month: "Mar", wishlists: 447 },
 ];
 const categoryData = [
-  { name: "Fashion",     value: 32, color: "#E63946" },
+  { name: "Fashion", value: 32, color: "#E63946" },
   { name: "Electronics", value: 28, color: "#4ECDC4" },
-  { name: "Jewelry",     value: 18, color: "#F4A261" },
-  { name: "Beauty",      value: 12, color: "#BB8FCE" },
-  { name: "Other",       value: 10, color: "#45B7D1" },
+  { name: "Jewelry", value: 18, color: "#F4A261" },
+  { name: "Beauty", value: 12, color: "#BB8FCE" },
+  { name: "Other", value: 10, color: "#45B7D1" },
 ];
 
 /* ── status config ── */
-const statusColor    = { active: "#10B981", idle: "#F59E0B", offline: "#9CA3AF" };
-const statusBg       = { active: "#ECFDF5", idle: "#FFFBEB", offline: "#F9FAFB" };
-const statusBorder   = { active: "rgba(16,185,129,0.3)", idle: "rgba(245,158,11,0.3)", offline: "rgba(156,163,175,0.3)" };
-const statusTextColor= { active: "#059669", idle: "#D97706", offline: "#6B7280" };
+const statusColor = { active: "#10B981", idle: "#F59E0B", offline: "#9CA3AF" };
+const statusBg = { active: "#ECFDF5", idle: "#FFFBEB", offline: "#F9FAFB" };
+const statusBorder = { active: "rgba(16,185,129,0.3)", idle: "rgba(245,158,11,0.3)", offline: "rgba(156,163,175,0.3)" };
+const statusTextColor = { active: "#059669", idle: "#D97706", offline: "#6B7280" };
 
-const OOS_BAR_COLORS = ["#E63946","#FF6B6B","#FF8C69","#E05050","#FF4757","#FF6348","#E84393","#E63946"];
+const OOS_BAR_COLORS = ["#E63946", "#FF6B6B", "#FF8C69", "#E05050", "#FF4757", "#FF6348", "#E84393", "#E63946"];
 
 /* ──────────────────────────────────────
    TOOLTIP COMPONENTS
@@ -248,27 +248,27 @@ const OosTooltip = ({ active, payload, label, oosOnly }) => {
 ────────────────────────────────────── */
 export default function WishlistDashboard() {
 
-  const { todayAdminData , fetchTodayAdminData  } = useTodayAdminData();
+  const { todayAdminData, fetchTodayAdminData } = useTodayAdminData();
   const { productTypes } = useLoaderData();
 
   const [selectedUser, setSelectedUser] = useState(null);
-  const [modalAnim,    setModalAnim]    = useState(false);
-  const [search,       setSearch]       = useState("");
-  const [animated,     setAnimated]     = useState(false);
+  const [modalAnim, setModalAnim] = useState(false);
+  const [search, setSearch] = useState("");
+  const [animated, setAnimated] = useState(false);
 
-  useEffect(() => { 
-    setTimeout(() => setAnimated(true), 120); 
+  useEffect(() => {
+    setTimeout(() => setAnimated(true), 120);
     fetchTodayAdminData();
   }, []);
 
-  const openModal  = (user) => { setSelectedUser(user); setTimeout(() => setModalAnim(true), 10); };
-  const closeModal = ()     => { setModalAnim(false); setTimeout(() => setSelectedUser(null), 280); };
+  const openModal = (user) => { setSelectedUser(user); setTimeout(() => setModalAnim(true), 10); };
+  const closeModal = () => { setModalAnim(false); setTimeout(() => setSelectedUser(null), 280); };
 
   /* aggregates */
-  const totalItems    = users.reduce((a, u) => a + u.totalItems,   0);
-  const totalValue    = users.reduce((a, u) => a + u.totalValue,   0);
+  const totalItems = users.reduce((a, u) => a + u.totalItems, 0);
+  const totalValue = users.reduce((a, u) => a + u.totalValue, 0);
   const totalProducts = users.reduce((a, u) => a + u.wishlist.length, 0);
-  const activeUsers   = users.filter(u => u.status === "active").length;
+  const activeUsers = users.filter(u => u.status === "active").length;
   const totalOutOfStock = outOfStockData.reduce((a, c) => a + c.outOfStock, 0);
 
   const filtered = users.filter(u =>
@@ -276,33 +276,33 @@ export default function WishlistDashboard() {
     u.email.toLowerCase().includes(search.toLowerCase())
   );
 
-  const oosOnly2 = [
-  {
-    category: "Furniture",
-    outOfStock: 12,
-    total: 50
-  },
-  {
-    category: "Electronics",
-    outOfStock: 8,
-    total: 40
-  },
-  {
-    category: "Clothing",
-    outOfStock: 15,
-    total: 60
-  },
-  {
-    category: "Kitchen",
-    outOfStock: 5,
-    total: 30
-  },
-  {
-    category: "Decor",
-    outOfStock: 9,
-    total: 25
-  }
-];
+  //   const oosOnly2 = [
+  //   {
+  //     category: "Furniture",
+  //     outOfStock: 12,
+  //     total: 50
+  //   },
+  //   {
+  //     category: "Electronics",
+  //     outOfStock: 8,
+  //     total: 40
+  //   },
+  //   {
+  //     category: "Clothing",
+  //     outOfStock: 15,
+  //     total: 60
+  //   },
+  //   {
+  //     category: "Kitchen",
+  //     outOfStock: 5,
+  //     total: 30
+  //   },
+  //   {
+  //     category: "Decor",
+  //     outOfStock: 9,
+  //     total: 25
+  //   }
+  // ];
 
   const oosOnly = outOfStockData
     .filter(c => c.outOfStock > 0)
@@ -310,43 +310,43 @@ export default function WishlistDashboard() {
 
   /* sidebar summary items */
   const summarySections = [
-    { label: "Total Customers", value: todayAdminData.WholeData?.totalCustomers,              icon: "👥", color: "#45B7D1", delay: "0s"    },
-    { label: "Wishlist Items",  value: todayAdminData.WholeData?.totalCount,                icon: "❤️", color: "#E63946", delay: "0.06s" },
-    { label: "Unique Products", value: totalProducts,             icon: "🛍️", color: "#F4A261", delay: "0.12s" },
-    { label: "Total Value",     value: "$" + todayAdminData.WholeData?.totalRevenue, icon: "💰", color: "#BB8FCE", delay: "0.18s" },
-    { label: "Out of Stock",    value: todayAdminData.WholeData?.OutOfStock,            icon: "🚫", color: "#E63946", delay: "0.24s" },
+    { label: "Total Customers", value: todayAdminData.WholeData?.totalCustomers, icon: "👥", color: "#45B7D1", delay: "0s" },
+    { label: "Wishlist Items", value: todayAdminData.WholeData?.totalCount, icon: "❤️", color: "#E63946", delay: "0.06s" },
+    { label: "Unique Products", value: totalProducts, icon: "🛍️", color: "#F4A261", delay: "0.12s" },
+    { label: "Total Value", value: "$" + todayAdminData.WholeData?.totalRevenue, icon: "💰", color: "#BB8FCE", delay: "0.18s" },
+    { label: "Out of Stock", value: todayAdminData.WholeData?.OutOfStock, icon: "🚫", color: "#E63946", delay: "0.24s" },
   ];
 
   /* status rows */
   const statusRows = [
-    { label: "Active",  count: users.filter(u => u.status === "active").length,  color: "#10B981", bg: "#ECFDF5", border: "#BBF7D0" },
-    { label: "Idle",    count: users.filter(u => u.status === "idle").length,    color: "#F59E0B", bg: "#FFFBEB", border: "#FDE68A" },
+    { label: "Active", count: users.filter(u => u.status === "active").length, color: "#10B981", bg: "#ECFDF5", border: "#BBF7D0" },
+    { label: "Idle", count: users.filter(u => u.status === "idle").length, color: "#F59E0B", bg: "#FFFBEB", border: "#FDE68A" },
     { label: "Offline", count: users.filter(u => u.status === "offline").length, color: "#9CA3AF", bg: "#F9FAFB", border: "#E5E7EB" },
   ];
 
   /* kpi cards */
   const kpiCards = [
-    { label: "Today Total Wishlists", value: todayAdminData.todayTotalWishlist,      sub: "↑ "+ todayAdminData.todayincrementWishlist + "% today",  icon: "❤️", color: "#E63946", delay: "0s"    },
-    { label: "Items Saved",     value: totalItems,                             sub: "↑ 8% this week",   icon: "🛍️", color: "#4ECDC4", delay: "0.08s" },
-    { label: "Today Total Value",     value: "$" + todayAdminData.todayTotalValue,      sub: "↑ "+ todayAdminData.todayTotalValueIncrement +"% today", icon: "💰", color: "#F4A261", delay: "0.16s" },
-    { label: "Avg per User",    value: todayAdminData.itemPerWishlist,  sub: "items per wishlist",icon: "📊", color: "#BB8FCE", delay: "0.24s" },
+    { label: "Today Total Wishlists", value: todayAdminData.todayTotalWishlist, sub: "↑ " + todayAdminData.todayincrementWishlist + "% today", icon: "❤️", color: "#E63946", delay: "0s" },
+    { label: "Items Saved", value: totalItems, sub: "↑ 8% this week", icon: "🛍️", color: "#4ECDC4", delay: "0.08s" },
+    { label: "Today Total Value", value: "$" + todayAdminData.todayTotalValue, sub: "↑ " + todayAdminData.todayTotalValueIncrement + "% today", icon: "💰", color: "#F4A261", delay: "0.16s" },
+    { label: "Avg per User", value: todayAdminData.itemPerWishlist, sub: "items per wishlist", icon: "📊", color: "#BB8FCE", delay: "0.24s" },
   ];
 
   /* modal pills */
   const modalPills = selectedUser ? [
-    { icon: "❤️", label: `${selectedUser.totalItems} items`           },
+    { icon: "❤️", label: `${selectedUser.totalItems} items` },
     { icon: "💰", label: `$${selectedUser.totalValue.toLocaleString()}` },
-    { icon: "🕐", label: selectedUser.lastActive                       },
+    { icon: "🕐", label: selectedUser.lastActive },
   ] : [];
 
   /* ── RENDER ── */
   return (
     <div id="app-root">
-    <pre>
-      <code>
-        {JSON.stringify(todayAdminData, null, 2)}
-      </code>
-    </pre>
+      <pre>
+        <code>
+          {JSON.stringify(todayAdminData, null, 2)}
+        </code>
+      </pre>
       {/* ── HEADER ── */}
       <header id="header">
         <div id="header-brand">
@@ -483,20 +483,20 @@ export default function WishlistDashboard() {
                 <AreaChart data={todayAdminData.DailyAnalistresult}>
                   <defs>
                     <linearGradient id="gSaves" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%"  stopColor="#E63946" stopOpacity={0.18} />
+                      <stop offset="5%" stopColor="#E63946" stopOpacity={0.18} />
                       <stop offset="95%" stopColor="#E63946" stopOpacity={0} />
                     </linearGradient>
                     <linearGradient id="gValue" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%"  stopColor="#4ECDC4" stopOpacity={0.18} />
+                      <stop offset="5%" stopColor="#4ECDC4" stopOpacity={0.18} />
                       <stop offset="95%" stopColor="#4ECDC4" stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
-                  <XAxis dataKey="day"    tick={{ fill: "#6B7280", fontSize: 11, fontWeight: 500 }} axisLine={false} tickLine={false} />
-                  <YAxis                  tick={{ fill: "#6B7280", fontSize: 11 }} axisLine={false} tickLine={false} width={30} />
+                  <XAxis dataKey="day" tick={{ fill: "#6B7280", fontSize: 11, fontWeight: 500 }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fill: "#6B7280", fontSize: 11 }} axisLine={false} tickLine={false} width={30} />
                   <Tooltip content={<CustomTooltip />} />
-                  <Area type="monotone" dataKey="totalproduct" name="Saves"    stroke="#E63946" strokeWidth={2.5} fill="url(#gSaves)" dot={false} />
-                  <Area type="monotone" dataKey="revenue" name="Value $"  stroke="#4ECDC4" strokeWidth={2.5} fill="url(#gValue)" dot={false} />
+                  <Area type="monotone" dataKey="totalproduct" name="Saves" stroke="#E63946" strokeWidth={2.5} fill="url(#gSaves)" dot={false} />
+                  <Area type="monotone" dataKey="revenue" name="Value $" stroke="#4ECDC4" strokeWidth={2.5} fill="url(#gValue)" dot={false} />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
@@ -532,40 +532,49 @@ export default function WishlistDashboard() {
                 <div className="chart-subtitle">OOS count vs total wishlist items per category</div>
               </div>
               <div className="oos-badges">
-                <div className="oos-badge oos-badge--red">🚫 {totalOutOfStock} OOS</div>
-                <div className="oos-badge oos-badge--gray">🛍️ {totalProducts} total</div>
+                <div className="oos-badge oos-badge--red">🚫 {todayAdminData?.WholeData?.OutOfStock ?? 0} OOS in Wishlist</div>
+                <div className="oos-badge oos-badge--gray">🛍️ {todayAdminData?.totalproducts ?? 0} total</div>
               </div>
             </div>
 
             <ResponsiveContainer width="100%" height={230}>
-              <BarChart data={oosOnly2} barSize={42} margin={{ top: 24, right: 8, left: 0, bottom: 0 }}>
+              <BarChart data={todayAdminData.oosOnly2} barSize={42} margin={{ top: 24, right: 8, left: 0, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" vertical={false} />
                 <XAxis dataKey="category" tick={{ fill: "#6B7280", fontSize: 12, fontWeight: 600 }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fill: "#6B7280", fontSize: 11 }} axisLine={false} tickLine={false} width={24} allowDecimals={false} />
-                <Tooltip content={(props) => <OosTooltip {...props} oosOnly={oosOnly2} />} />
+                <Tooltip content={(props) => <OosTooltip {...props} oosOnly={todayAdminData.oosOnly2} />} />
                 <Bar
                   dataKey="outOfStock"
                   name="Out of Stock"
                   radius={[8, 8, 0, 0]}
                   label={({ x, y, width, value, index }) => {
-                    const d = oosOnly2[index];
+                    const d = todayAdminData.oosOnly2[index];
                     return (
                       <g>
-                        <text x={x + width / 2} y={y - 6}  textAnchor="middle" fill="#E63946" fontWeight={800} fontSize={13}>🚫 {value}</text>
+                        <text x={x + width / 2} y={y - 6} textAnchor="middle" fill="#E63946" fontWeight={800} fontSize={13}>🚫 {value}</text>
                         <text x={x + width / 2} y={y + (230 - 24 - 30) + 38} textAnchor="middle" fill="#6B7280" fontWeight={700} fontSize={11}>{d?.total} total</text>
                       </g>
                     );
                   }}
                 >
-                  {oosOnly.map((_, i) => <Cell key={i} fill={OOS_BAR_COLORS[i % OOS_BAR_COLORS.length]} fillOpacity={0.88} />)}
+                  {todayAdminData?.oosOnly2?.map((_, i) => (
+                    <Cell
+                      key={i}
+                      fill={OOS_BAR_COLORS[i % OOS_BAR_COLORS.length]}
+                      fillOpacity={0.88}
+                    />
+                  ))}
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
 
             <div className="oos-pills-row">
-              {oosOnly.map((c, i) => (
+              {todayAdminData?.oosOnly2?.map((c, i) => (
                 <div key={i} className="oos-pill">
-                  <div className="oos-pill__dot" style={{ background: OOS_BAR_COLORS[i % OOS_BAR_COLORS.length] }} />
+                  <div
+                    className="oos-pill__dot"
+                    style={{ background: OOS_BAR_COLORS[i % OOS_BAR_COLORS.length] }}
+                  />
                   <span className="oos-pill__cat">{c.category}</span>
                   <span className="oos-pill__oos">{c.outOfStock} OOS</span>
                   <span className="oos-pill__sep">/</span>

@@ -38,6 +38,7 @@ export function useTodayAdminData() {
                     OutOfStock: result.AllData?.OutOfStock ?? 0,
                 },
                 DailyAnalistresult: result.DailyAnalistresult ?? [],
+                oosOnly2: result.oosOnly2 ?? [],
             });
 
         } catch (error) {
