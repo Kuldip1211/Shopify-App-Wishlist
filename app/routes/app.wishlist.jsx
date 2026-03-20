@@ -181,11 +181,11 @@ const areaData = [
   { day: "Fri", saves: 89, value: 7200 }, { day: "Sat", saves: 64, value: 5100 },
   { day: "Sun", saves: 95, value: 8400 },
 ];
-const barData = [
-  { month: "Oct", wishlists: 180 }, { month: "Nov", wishlists: 240 },
-  { month: "Dec", wishlists: 310 }, { month: "Jan", wishlists: 280 },
-  { month: "Feb", wishlists: 390 }, { month: "Mar", wishlists: 447 },
-];
+// const barData = [
+//   { month: "Oct", wishlists: 180 }, { month: "Nov", wishlists: 240 },
+//   { month: "Dec", wishlists: 310 }, { month: "Jan", wishlists: 280 },
+//   { month: "Feb", wishlists: 390 }, { month: "Mar", wishlists: 447 },
+// ];
 const categoryData = [
   { name: "Fashion", value: 32, color: "#E63946" },
   { name: "Electronics", value: 28, color: "#4ECDC4" },
@@ -591,19 +591,19 @@ export default function WishlistDashboard() {
                 <div className="chart-title">Monthly Wishlist Growth</div>
                 <div className="chart-subtitle">Total wishlists created per month</div>
               </div>
-              <div className="monthly-badge">+147 this month ↑</div>
+              <div className="monthly-badge">+{todayAdminData?.currentMonthWishlists} ↑</div>
             </div>
             <ResponsiveContainer width="100%" height={140}>
-              <BarChart data={barData} barSize={34}>
+              <BarChart data={todayAdminData?.barData} barSize={34}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" vertical={false} />
                 <XAxis dataKey="month" tick={{ fill: "#6B7280", fontSize: 11, fontWeight: 500 }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fill: "#6B7280", fontSize: 11 }} axisLine={false} tickLine={false} width={30} />
                 <Tooltip content={<CustomTooltip />} />
                 <Bar dataKey="wishlists" name="Wishlists" radius={[7, 7, 0, 0]}>
-                  {barData.map((_, i) => (
+                  {todayAdminData?.barData?.map((_, i) => (
                     <Cell
                       key={i}
-                      fill={i === barData.length - 1
+                      fill={i === todayAdminData?.barData?.length - 1
                         ? "#E63946"
                         : `#E63946${Math.round(30 + i * 28).toString(16).padStart(2, "0")}`}
                     />

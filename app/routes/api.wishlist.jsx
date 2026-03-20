@@ -247,6 +247,63 @@ export const loader = async ({ request }) => {
 
     console.log(oosOnly2);
 
+    console.log("------------------------------------------------------------------------------------------------------------------");
+    console.log("                                                 Total Wishlist Count                                         ");
+    console.log("------------------------------------------------------------------------------------------------------------------")
+
+    const now = new Date();
+
+    const startDate = new Date(now.getFullYear(), now.getMonth() - 5, 1);
+    const endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+
+    const rows = await db.dailyAnalytics.findMany({
+      where: {
+        createdAt: { gte: startDate, lte: endDate },
+      },
+      select: {
+        createdAt: true,
+        totalproduct: true,
+      },
+    });
+
+    const monthKeys = [];
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+      monthKeys.push(key);
+    }
+
+    const monthMap = {};
+    for (const key of monthKeys) {
+      monthMap[key] = 0;
+    }
+
+    for (const row of rows) {
+      const d = new Date(row.createdAt);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+      if (monthMap[key] !== undefined) {
+        monthMap[key] += row.totalproduct;
+      }
+    }
+
+    // Current month total
+    const currentMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+    const currentMonthWishlists = monthMap[currentMonthKey] ?? 0;
+
+    const barData = monthKeys.map((key) => {
+      const [year, month] = key.split("-");
+      const label = new Date(Number(year), Number(month) - 1, 1)
+        .toLocaleString("en-US", { month: "short" });
+      return { month: label, wishlists: monthMap[key] };
+    });
+
+    console.log("------------------------------------------------------------------------------------------------------------------");
+    console.log("                                                 Monthly Wishlist Count                                         ");
+    console.log("------------------------------------------------------------------------------------------------------------------")
+    console.log(barData);
+
+
+
     const todayResult = await db.products.aggregate({
       _sum: {
         productlistCount: true,
@@ -343,7 +400,9 @@ export const loader = async ({ request }) => {
       AvgperUSer,
       AllData,
       DailyAnalistresult,
-      oosOnly2
+      oosOnly2,
+      barData,
+      currentMonthWishlists
     });
   }
 

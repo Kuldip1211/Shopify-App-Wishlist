@@ -39,6 +39,8 @@ export function useTodayAdminData() {
                 },
                 DailyAnalistresult: result.DailyAnalistresult ?? [],
                 oosOnly2: result.oosOnly2 ?? [],
+                barData: result.barData ?? [],
+                currentMonthWishlists: result.currentMonthWishlists ?? 0,
             });
 
         } catch (error) {
